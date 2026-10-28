@@ -11,7 +11,7 @@
 5. **以图搜商品**：使用 CLIP 建立图文共同向量空间，支持相似商品与同风格商品检索。
 6. **评测与 Bad Case**：Precision@K、Recall@K、NDCG@K、HitRate@K、覆盖率、P95 延迟及错误分类。
 
-当前里程碑 `M2` 已实现模拟数据生成、分析指标、推荐基线、热门/ItemCF/BM25 多路召回、RRF 融合、Leave-One-Out 离线评测、FastAPI 接口、Streamlit 看板和单元测试。
+当前里程碑 `M3` 已实现模拟及真实电商数据处理、分析指标、推荐基线、热门/ItemCF/BM25/TF-IDF 向量召回、RRF 融合、Leave-One-Out 离线评测、FastAPI 接口、Streamlit 看板和单元测试。
 
 ### M2 召回链路
 
@@ -22,6 +22,19 @@ BM25    ──┘
 ```
 
 评测采用按用户最后一次正向行为留出的 Leave-One-Out 方法，输出 Precision@K、Recall@K、HitRate@K、NDCG@K、商品覆盖率、平均延迟与 P95 延迟。
+
+## 真实数据实验
+
+M3 使用 UCI Machine Learning Repository 的 Online Retail 数据集。该数据包含 2010—2011 年英国线上零售商的 541,909 条交易记录，许可为 CC BY 4.0。
+
+```bash
+python scripts/prepare_uci_online_retail.py --max-users 500 --max-products 1000
+python scripts/run_retrieval_experiment.py --users 50 --k 10
+```
+
+原始与处理后数据位于被 Git 忽略的目录中，仓库只保存下载、清洗、实验脚本和统计结果，避免重复分发大型数据文件。
+
+首次真实数据对比中，混合召回的 HitRate@10 为 4%，单路模型均为 2%；文本向量召回商品覆盖率为 43.38%。由于当前仅评测 50 名用户，这些结果是可复现的阶段性基线，不代表统计显著的线上收益。
 
 ## 快速开始
 

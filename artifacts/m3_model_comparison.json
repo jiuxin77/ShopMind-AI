@@ -1,0 +1,54 @@
+[
+  {
+    "model": "popular",
+    "users": 50,
+    "k": 10,
+    "hits": 1,
+    "precision_at_k": 0.002,
+    "recall_at_k": 0.02,
+    "hit_rate_at_k": 0.02,
+    "ndcg_at_k": 0.02,
+    "catalog_coverage": 0.0125,
+    "mean_latency_ms": 15.808277480537072,
+    "p95_latency_ms": 16.990725153300446
+  },
+  {
+    "model": "item_cf",
+    "users": 50,
+    "k": 10,
+    "hits": 1,
+    "precision_at_k": 0.002,
+    "recall_at_k": 0.02,
+    "hit_rate_at_k": 0.02,
+    "ndcg_at_k": 0.005781296526357758,
+    "catalog_coverage": 0.08625,
+    "mean_latency_ms": 114.8974508192623,
+    "p95_latency_ms": 147.97653330751928
+  },
+  {
+    "model": "text_vector",
+    "users": 50,
+    "k": 10,
+    "hits": 1,
+    "precision_at_k": 0.002,
+    "recall_at_k": 0.02,
+    "hit_rate_at_k": 0.02,
+    "ndcg_at_k": 0.006309297535714575,
+    "catalog_coverage": 0.43375,
+    "mean_latency_ms": 22.114310000033583,
+    "p95_latency_ms": 23.24422515448532
+  },
+  {
+    "model": "hybrid",
+    "users": 50,
+    "k": 10,
+    "hits": 2,
+    "precision_at_k": 0.004,
+    "recall_at_k": 0.04,
+    "hit_rate_at_k": 0.04,
+    "ndcg_at_k": 0.03,
+    "catalog_coverage": 0.27125,
+    "mean_latency_ms": 151.57889156020246,
+    "p95_latency_ms": 185.1723249994393
+  }
+]

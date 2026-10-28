@@ -6,4 +6,6 @@ __pycache__/
 .ruff_cache/
 .DS_Store
 .streamlit/
+data/raw/
+data/processed/
 

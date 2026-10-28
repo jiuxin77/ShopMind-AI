@@ -1,0 +1,9 @@
+{
+  "source": "UCI Online Retail, DOI 10.24432/C5BW33",
+  "license": "CC BY 4.0",
+  "raw_rows": 541909,
+  "clean_rows": 113218,
+  "users": 300,
+  "products": 800,
+  "interactions": 113218
+}

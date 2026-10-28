@@ -100,7 +100,7 @@ with tabs[2]:
         ],
         use_container_width=True,
     )
-    st.caption("当前已实现热门、ItemCF 和 BM25 三路召回；文本向量与图片向量将在 M3 接入。")
+    st.caption("当前已实现热门、ItemCF、BM25 与 TF-IDF 文本向量四路召回；图片向量将在后续接入。")
 with tabs[3]:
     st.info(
         "M3：接入结构化需求抽取，处理品类、预算、场景、风格和排除条件，并生成事实可追溯的推荐理由。"

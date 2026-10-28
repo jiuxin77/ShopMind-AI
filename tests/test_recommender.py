@@ -1,7 +1,12 @@
 import pandas as pd
 
 from shopmind.recommender import popular_recommend
-from shopmind.retrieval import bm25_recall, hybrid_recommend, reciprocal_rank_fusion
+from shopmind.retrieval import (
+    bm25_recall,
+    hybrid_recommend,
+    reciprocal_rank_fusion,
+    text_vector_recall,
+)
 
 
 def test_recommendation_respects_budget_and_stock():
@@ -51,6 +56,17 @@ def test_bm25_finds_matching_chinese_title():
         ]
     )
     result = bm25_recall("通勤女装", products)
+    assert result.iloc[0]["product_id"] == "P1"
+
+
+def test_text_vector_finds_semantically_overlapping_title():
+    products = pd.DataFrame(
+        [
+            {"product_id": "P1", "title": "通勤衬衫", "category": "女装", "brand": "青禾"},
+            {"product_id": "P2", "title": "无线耳机", "category": "数码", "brand": "星野"},
+        ]
+    )
+    result = text_vector_recall("通勤女装", products)
     assert result.iloc[0]["product_id"] == "P1"
 
 

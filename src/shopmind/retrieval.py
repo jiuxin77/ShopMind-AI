@@ -6,6 +6,8 @@ from collections import Counter, defaultdict
 
 import numpy as np
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 from shopmind.recommender import EVENT_WEIGHT
 
@@ -98,6 +100,29 @@ def bm25_recall(query: str, products: pd.DataFrame, top_k: int = 50) -> pd.DataF
     return result
 
 
+def text_vector_recall(query: str, products: pd.DataFrame, top_k: int = 50) -> pd.DataFrame:
+    """Character n-gram TF-IDF vector recall for mixed Chinese/English catalog text."""
+    query = query.strip()
+    if not query:
+        return pd.DataFrame(columns=["product_id", "raw_score", "source", "rank"])
+    catalog_text = (
+        products["title"].fillna("")
+        + " "
+        + products["category"].fillna("")
+        + " "
+        + products["brand"].fillna("")
+    )
+    vectorizer = TfidfVectorizer(analyzer="char_wb", ngram_range=(2, 4), min_df=1)
+    matrix = vectorizer.fit_transform(pd.concat([catalog_text, pd.Series([query])]))
+    scores = cosine_similarity(matrix[-1], matrix[:-1]).ravel()
+    result = pd.DataFrame({"product_id": products["product_id"].values, "raw_score": scores})
+    result = result[result["raw_score"] > 0].sort_values("raw_score", ascending=False).head(top_k)
+    result = result.reset_index(drop=True)
+    result["source"] = "text_vector"
+    result["rank"] = np.arange(1, len(result) + 1)
+    return result
+
+
 def reciprocal_rank_fusion(
     result_sets: list[pd.DataFrame], top_k: int = 20, rrf_k: int = 60
 ) -> pd.DataFrame:
@@ -125,12 +150,29 @@ def hybrid_recommend(
     category: str | None = None,
     budget_max: float | None = None,
     top_k: int = 10,
+    sources: set[str] | None = None,
 ) -> pd.DataFrame:
-    recalls = [popular_recall(interactions)]
-    if user_id:
+    selected = sources or {"popular", "item_cf", "bm25", "text_vector"}
+    recalls: list[pd.DataFrame] = []
+    if "popular" in selected:
+        recalls.append(popular_recall(interactions))
+    if user_id and "item_cf" in selected:
         recalls.append(item_cf_recall(user_id, interactions))
-    if query.strip():
-        recalls.append(bm25_recall(query, products))
+    effective_query = query.strip()
+    if not effective_query and user_id:
+        history_ids = interactions.loc[
+            (interactions["user_id"] == user_id) & interactions["event_type"].isin(POSITIVE_EVENTS),
+            "product_id",
+        ].tail(5)
+        effective_query = " ".join(
+            products.loc[products["product_id"].isin(history_ids), "title"].astype(str)
+        )
+    if effective_query and "bm25" in selected:
+        recalls.append(bm25_recall(effective_query, products))
+    if effective_query and "text_vector" in selected:
+        recalls.append(text_vector_recall(effective_query, products))
+    if not recalls:
+        return pd.DataFrame(columns=[*products.columns, "score", "evidence", "reason"])
     fused = reciprocal_rank_fusion(recalls, top_k=max(top_k * 5, 50))
     candidates = products.merge(fused, on="product_id", how="inner")
     candidates = candidates[(candidates["in_stock"] == True) & (candidates["active"] == True)]

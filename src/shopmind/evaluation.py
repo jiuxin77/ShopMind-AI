@@ -24,6 +24,7 @@ def evaluate_hybrid(
     interactions: pd.DataFrame,
     k: int = 10,
     max_users: int = 100,
+    sources: set[str] | None = None,
 ) -> dict[str, float | int]:
     train, test = leave_one_out_split(interactions)
     test = test.head(max_users)
@@ -33,7 +34,7 @@ def evaluate_hybrid(
     latencies_ms: list[float] = []
     for row in test.itertuples(index=False):
         started = time.perf_counter()
-        result = hybrid_recommend(products, train, user_id=row.user_id, top_k=k)
+        result = hybrid_recommend(products, train, user_id=row.user_id, top_k=k, sources=sources)
         latencies_ms.append((time.perf_counter() - started) * 1000)
         ranked = result["product_id"].tolist()
         recommended_items.update(ranked)
@@ -55,3 +56,22 @@ def evaluate_hybrid(
         "mean_latency_ms": float(np.mean(latencies_ms)) if latencies_ms else 0.0,
         "p95_latency_ms": float(np.percentile(latencies_ms, 95)) if latencies_ms else 0.0,
     }
+
+
+def compare_retrievers(
+    products: pd.DataFrame,
+    interactions: pd.DataFrame,
+    k: int = 10,
+    max_users: int = 50,
+) -> pd.DataFrame:
+    configurations = {
+        "popular": {"popular"},
+        "item_cf": {"item_cf"},
+        "text_vector": {"text_vector"},
+        "hybrid": {"popular", "item_cf", "bm25", "text_vector"},
+    }
+    rows = []
+    for model, sources in configurations.items():
+        metrics = evaluate_hybrid(products, interactions, k=k, max_users=max_users, sources=sources)
+        rows.append({"model": model, **metrics})
+    return pd.DataFrame(rows)
