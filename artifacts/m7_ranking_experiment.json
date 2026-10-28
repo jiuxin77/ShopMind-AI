@@ -1,0 +1,54 @@
+{
+  "validation_slice": "users[0:100]",
+  "test_slice": "users[100:300]",
+  "training": {
+    "training_rows": 5000,
+    "positive_rows": 20,
+    "positive_user_groups": 20
+  },
+  "ranking_strategy": "90% reciprocal RRF rank + 10% reciprocal model rank",
+  "features": [
+    "rrf_score",
+    "product_popularity",
+    "log_product_popularity",
+    "price",
+    "price_distance",
+    "history_size",
+    "evidence_count",
+    "popular_rr",
+    "item_cf_rr",
+    "bm25_rr",
+    "text_vector_rr",
+    "recent_interest_rr"
+  ],
+  "results": [
+    {
+      "model": "m6_weighted_rrf",
+      "users": 200,
+      "k": 10,
+      "hits": 22,
+      "precision_at_k": 0.011,
+      "recall_at_k": 0.11,
+      "hit_rate_at_k": 0.11,
+      "candidate_recall": 0.2,
+      "ndcg_at_k": 0.04544301066415327,
+      "catalog_coverage": 0.6175,
+      "mean_latency_ms": 45.91560856431897,
+      "p95_latency_ms": 47.53575690338039
+    },
+    {
+      "model": "m7_logistic_reranker",
+      "users": 200,
+      "k": 10,
+      "hits": 20,
+      "precision_at_k": 0.01,
+      "recall_at_k": 0.1,
+      "hit_rate_at_k": 0.1,
+      "candidate_recall": 0.2,
+      "ndcg_at_k": 0.04267201409443532,
+      "catalog_coverage": 0.62125,
+      "mean_latency_ms": 47.27161230461206,
+      "p95_latency_ms": 48.59350385086145
+    }
+  ]
+}

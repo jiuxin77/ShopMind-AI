@@ -212,3 +212,38 @@ with tabs[5]:
             ),
             use_container_width=True,
         )
+    m7_path = ARTIFACT_DIR / "m7_ranking_experiment.json"
+    if m7_path.exists():
+        m7 = json.loads(m7_path.read_text(encoding="utf-8"))
+        m7_results = pd.DataFrame(m7["results"])
+        baseline = m7_results.iloc[0]
+        reranked = m7_results.iloc[1]
+        accepted = reranked["hit_rate_at_k"] > baseline["hit_rate_at_k"]
+        st.subheader("M7 学习排序与离线发布门禁")
+        gate_columns = st.columns(4)
+        gate_columns[0].metric("训练样本", f"{m7['training']['training_rows']:,}")
+        gate_columns[1].metric("正样本", f"{m7['training']['positive_rows']}")
+        gate_columns[2].metric(
+            "重排 HitRate@10",
+            f"{reranked['hit_rate_at_k']:.2%}",
+            f"{reranked['hit_rate_at_k'] - baseline['hit_rate_at_k']:+.2%}",
+        )
+        gate_columns[3].metric("发布门禁", "通过" if accepted else "拒绝")
+        if accepted:
+            st.success("重排模型优于当前基线，可以进入下一阶段灰度验证。")
+        else:
+            st.warning(
+                "重排模型未超过 M6 基线，保持 M6 为默认模型。"
+                "主要限制是候选池中的训练正样本仅 20 条。"
+            )
+        st.caption(f"混排策略：{m7['ranking_strategy']}；特征：{', '.join(m7['features'])}")
+        st.plotly_chart(
+            px.bar(
+                m7_results,
+                x="model",
+                y=["hit_rate_at_k", "ndcg_at_k", "catalog_coverage"],
+                barmode="group",
+                title="M6 与 M7 独立测试集对比",
+            ),
+            use_container_width=True,
+        )

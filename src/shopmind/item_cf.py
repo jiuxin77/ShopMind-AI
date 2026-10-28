@@ -18,7 +18,7 @@ class ItemCFIndex:
 
     def recommend(self, history: set[str], top_k: int = 50) -> pd.DataFrame:
         scores: dict[str, float] = {}
-        for seed in history:
+        for seed in sorted(history):
             for candidate, similarity in self.neighbors.get(seed, []):
                 if candidate not in history:
                     scores[candidate] = scores.get(candidate, 0.0) + similarity
