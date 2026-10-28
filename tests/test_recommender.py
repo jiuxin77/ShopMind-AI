@@ -79,6 +79,13 @@ def test_rrf_combines_source_evidence():
     assert result.iloc[0]["evidence"] == "a#1, b#1"
 
 
+def test_weighted_rrf_can_prioritize_a_source():
+    first = pd.DataFrame([{"product_id": "P1", "raw_score": 1.0, "source": "a", "rank": 1}])
+    second = pd.DataFrame([{"product_id": "P2", "raw_score": 1.0, "source": "b", "rank": 1}])
+    result = reciprocal_rank_fusion([first, second], source_weights={"a": 1.0, "b": 2.0})
+    assert result.iloc[0]["product_id"] == "P2"
+
+
 def test_hybrid_recommend_respects_business_filters():
     products = pd.DataFrame(
         [

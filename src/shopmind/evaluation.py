@@ -24,9 +24,12 @@ def evaluate_with_details(
     k: int = 10,
     max_users: int = 100,
     sources: set[str] | None = None,
+    source_weights: dict[str, float] | None = None,
+    user_offset: int = 0,
+    candidate_k: int = 50,
 ) -> tuple[dict[str, float | int], pd.DataFrame]:
     train, test = leave_one_out_split(interactions)
-    test = test.head(max_users)
+    test = test.iloc[user_offset : user_offset + max_users]
     selected = sources or {"popular", "item_cf", "bm25", "text_vector"}
     item_cf_index = build_item_cf_index(train) if "item_cf" in selected else None
     hits = 0
@@ -40,16 +43,23 @@ def evaluate_with_details(
             products,
             train,
             user_id=row.user_id,
-            top_k=k,
+            top_k=candidate_k,
             sources=selected,
             item_cf_index=item_cf_index,
+            source_weights=source_weights,
         )
         latency_ms = (time.perf_counter() - started) * 1000
         latencies_ms.append(latency_ms)
-        ranked = result["product_id"].tolist()
+        candidate_ranking = result["product_id"].tolist()
+        ranked = candidate_ranking[:k]
         recommended_items.update(ranked)
         hit = row.product_id in ranked
-        rank = ranked.index(row.product_id) + 1 if hit else None
+        candidate_rank = (
+            candidate_ranking.index(row.product_id) + 1
+            if row.product_id in candidate_ranking
+            else None
+        )
+        rank = candidate_rank if hit else None
         if hit:
             hits += 1
             assert rank is not None
@@ -60,8 +70,15 @@ def evaluate_with_details(
                 "target_product_id": row.product_id,
                 "hit": hit,
                 "rank": rank,
+                "candidate_rank": candidate_rank,
                 "recommended_product_ids": "|".join(ranked),
-                "bad_case_type": "" if hit else "target_not_recalled",
+                "bad_case_type": (
+                    ""
+                    if hit
+                    else "ranking_miss"
+                    if candidate_rank is not None
+                    else "candidate_not_recalled"
+                ),
                 "latency_ms": latency_ms,
             }
         )
@@ -88,9 +105,17 @@ def evaluate_hybrid(
     k: int = 10,
     max_users: int = 100,
     sources: set[str] | None = None,
+    source_weights: dict[str, float] | None = None,
+    user_offset: int = 0,
 ) -> dict[str, float | int]:
     metrics, _ = evaluate_with_details(
-        products, interactions, k=k, max_users=max_users, sources=sources
+        products,
+        interactions,
+        k=k,
+        max_users=max_users,
+        sources=sources,
+        source_weights=source_weights,
+        user_offset=user_offset,
     )
     return metrics
 
@@ -112,3 +137,31 @@ def compare_retrievers(
         metrics = evaluate_hybrid(products, interactions, k=k, max_users=max_users, sources=sources)
         rows.append({"model": model, **metrics})
     return pd.DataFrame(rows)
+
+
+def tune_fusion_weights(
+    products: pd.DataFrame,
+    interactions: pd.DataFrame,
+    validation_users: int = 100,
+    k: int = 10,
+) -> tuple[dict[str, float], pd.DataFrame]:
+    candidates = {
+        "equal": {"popular": 1.0, "item_cf": 1.0, "bm25": 1.0, "text_vector": 1.0},
+        "text_x2": {"popular": 1.0, "item_cf": 1.0, "bm25": 1.0, "text_vector": 2.0},
+        "text_x3": {"popular": 0.5, "item_cf": 0.5, "bm25": 1.0, "text_vector": 3.0},
+        "text_bm25": {"popular": 0.5, "item_cf": 0.5, "bm25": 2.0, "text_vector": 2.0},
+    }
+    rows = []
+    for name, weights in candidates.items():
+        metrics = evaluate_hybrid(
+            products,
+            interactions,
+            k=k,
+            max_users=validation_users,
+            sources=set(weights),
+            source_weights=weights,
+        )
+        rows.append({"configuration": name, "weights": weights, **metrics})
+    results = pd.DataFrame(rows).sort_values(["hit_rate_at_k", "ndcg_at_k"], ascending=False)
+    best = results.iloc[0]["weights"]
+    return best, results

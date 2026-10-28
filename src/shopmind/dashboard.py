@@ -145,3 +145,28 @@ with tabs[5]:
         bad_cases = details[details["hit"] == False]
         st.metric("未命中 Bad Case", f"{len(bad_cases)} / {len(details)}")
         st.dataframe(bad_cases.head(100), use_container_width=True)
+    m5_path = ARTIFACT_DIR / "m5_weight_tuning.json"
+    m5_bad_case_path = ARTIFACT_DIR / "m5_bad_cases.csv"
+    if m5_path.exists():
+        m5 = json.loads(m5_path.read_text(encoding="utf-8"))
+        st.subheader("加权融合独立测试结果")
+        weighted = m5["test_metrics"]
+        weighted_columns = st.columns(4)
+        weighted_columns[0].metric("HitRate@10", f"{weighted['hit_rate_at_k']:.2%}")
+        weighted_columns[1].metric("NDCG@10", f"{weighted['ndcg_at_k']:.4f}")
+        weighted_columns[2].metric("覆盖率", f"{weighted['catalog_coverage']:.2%}")
+        weighted_columns[3].metric("P95", f"{weighted['p95_latency_ms']:.1f} ms")
+        st.caption(f"验证集选出的权重：{m5['best_weights']}")
+    if m5_bad_case_path.exists():
+        m5_details = pd.read_csv(m5_bad_case_path)
+        distribution = (
+            m5_details["bad_case_type"]
+            .fillna("hit")
+            .value_counts()
+            .rename_axis("type")
+            .reset_index(name="count")
+        )
+        st.plotly_chart(
+            px.pie(distribution, names="type", values="count", title="Bad Case 类型分布"),
+            use_container_width=True,
+        )

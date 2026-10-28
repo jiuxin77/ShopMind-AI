@@ -1,0 +1,100 @@
+{
+  "validation_users": 100,
+  "test_users": 200,
+  "best_weights": {
+    "popular": 1.0,
+    "item_cf": 1.0,
+    "bm25": 1.0,
+    "text_vector": 2.0
+  },
+  "test_metrics": {
+    "users": 200,
+    "k": 10,
+    "hits": 19,
+    "precision_at_k": 0.0095,
+    "recall_at_k": 0.095,
+    "hit_rate_at_k": 0.095,
+    "ndcg_at_k": 0.03851923771597753,
+    "catalog_coverage": 0.63125,
+    "mean_latency_ms": 46.37643461028347,
+    "p95_latency_ms": 47.987646146066254
+  },
+  "tuning_results": [
+    {
+      "configuration": "text_x2",
+      "weights": {
+        "popular": 1.0,
+        "item_cf": 1.0,
+        "bm25": 1.0,
+        "text_vector": 2.0
+      },
+      "users": 100,
+      "k": 10,
+      "hits": 6,
+      "precision_at_k": 0.006,
+      "recall_at_k": 0.06,
+      "hit_rate_at_k": 0.06,
+      "ndcg_at_k": 0.03366389210246532,
+      "catalog_coverage": 0.5225,
+      "mean_latency_ms": 45.338635439402424,
+      "p95_latency_ms": 47.15031394807738
+    },
+    {
+      "configuration": "text_bm25",
+      "weights": {
+        "popular": 0.5,
+        "item_cf": 0.5,
+        "bm25": 2.0,
+        "text_vector": 2.0
+      },
+      "users": 100,
+      "k": 10,
+      "hits": 6,
+      "precision_at_k": 0.006,
+      "recall_at_k": 0.06,
+      "hit_rate_at_k": 0.06,
+      "ndcg_at_k": 0.033010299956639816,
+      "catalog_coverage": 0.5775,
+      "mean_latency_ms": 45.74320162937511,
+      "p95_latency_ms": 47.41821044299286
+    },
+    {
+      "configuration": "text_x3",
+      "weights": {
+        "popular": 0.5,
+        "item_cf": 0.5,
+        "bm25": 1.0,
+        "text_vector": 3.0
+      },
+      "users": 100,
+      "k": 10,
+      "hits": 6,
+      "precision_at_k": 0.006,
+      "recall_at_k": 0.06,
+      "hit_rate_at_k": 0.06,
+      "ndcg_at_k": 0.028962228361402297,
+      "catalog_coverage": 0.5825,
+      "mean_latency_ms": 45.77046874022926,
+      "p95_latency_ms": 47.15413304802496
+    },
+    {
+      "configuration": "equal",
+      "weights": {
+        "popular": 1.0,
+        "item_cf": 1.0,
+        "bm25": 1.0,
+        "text_vector": 1.0
+      },
+      "users": 100,
+      "k": 10,
+      "hits": 4,
+      "precision_at_k": 0.004,
+      "recall_at_k": 0.04,
+      "hit_rate_at_k": 0.04,
+      "ndcg_at_k": 0.03130929753571458,
+      "catalog_coverage": 0.38875,
+      "mean_latency_ms": 45.0173032899329,
+      "p95_latency_ms": 46.91838480648585
+    }
+  ]
+}

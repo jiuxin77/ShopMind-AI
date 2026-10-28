@@ -111,14 +111,18 @@ def text_vector_recall(query: str, products: pd.DataFrame, top_k: int = 50) -> p
 
 
 def reciprocal_rank_fusion(
-    result_sets: list[pd.DataFrame], top_k: int = 20, rrf_k: int = 60
+    result_sets: list[pd.DataFrame],
+    top_k: int = 20,
+    rrf_k: int = 60,
+    source_weights: dict[str, float] | None = None,
 ) -> pd.DataFrame:
     """Fuse ranked candidates while preserving per-source evidence."""
     scores: defaultdict[str, float] = defaultdict(float)
     evidence: defaultdict[str, list[str]] = defaultdict(list)
     for result in result_sets:
         for row in result.itertuples(index=False):
-            scores[row.product_id] += 1.0 / (rrf_k + int(row.rank))
+            weight = (source_weights or {}).get(row.source, 1.0)
+            scores[row.product_id] += weight / (rrf_k + int(row.rank))
             evidence[row.product_id].append(f"{row.source}#{row.rank}")
     rows = [
         {"product_id": product_id, "score": score, "evidence": ", ".join(evidence[product_id])}
@@ -139,6 +143,7 @@ def hybrid_recommend(
     top_k: int = 10,
     sources: set[str] | None = None,
     item_cf_index: ItemCFIndex | None = None,
+    source_weights: dict[str, float] | None = None,
 ) -> pd.DataFrame:
     selected = sources or {"popular", "item_cf", "bm25", "text_vector"}
     recalls: list[pd.DataFrame] = []
@@ -161,7 +166,11 @@ def hybrid_recommend(
         recalls.append(text_vector_recall(effective_query, products))
     if not recalls:
         return pd.DataFrame(columns=[*products.columns, "score", "evidence", "reason"])
-    fused = reciprocal_rank_fusion(recalls, top_k=max(top_k * 5, 50))
+    fused = reciprocal_rank_fusion(
+        recalls,
+        top_k=max(top_k * 5, 50),
+        source_weights=source_weights,
+    )
     candidates = products.merge(fused, on="product_id", how="inner")
     candidates = candidates[(candidates["in_stock"] == True) & (candidates["active"] == True)]
     if category:

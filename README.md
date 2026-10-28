@@ -11,7 +11,7 @@
 5. **以图搜商品**：使用 CLIP 建立图文共同向量空间，支持相似商品与同风格商品检索。
 6. **评测与 Bad Case**：Precision@K、Recall@K、NDCG@K、HitRate@K、覆盖率、P95 延迟及错误分类。
 
-当前里程碑 `M4` 已实现模拟及真实电商数据处理、分析指标、推荐基线、热门/ItemCF/BM25/TF-IDF 向量召回、RRF 融合、ItemCF 离线索引、Leave-One-Out 离线评测、Bad Case 明细、FastAPI 接口、Streamlit 看板和单元测试。
+当前里程碑 `M5` 已实现模拟及真实电商数据处理、分析指标、推荐基线、热门/ItemCF/BM25/TF-IDF 向量召回、加权 RRF、ItemCF 离线索引、独立用户调参与测试、Bad Case 分层、FastAPI 接口、Streamlit 看板和单元测试。
 
 ### M2 召回链路
 
@@ -31,6 +31,7 @@ M3 使用 UCI Machine Learning Repository 的 Online Retail 数据集。该数�
 python scripts/prepare_uci_online_retail.py --max-users 500 --max-products 1000
 python scripts/run_retrieval_experiment.py --users 50 --k 10
 python scripts/build_item_cf_index.py
+python scripts/tune_fusion_weights.py --validation-users 100 --test-users 200
 ```
 
 原始与处理后数据位于被 Git 忽略的目录中，仓库只保存下载、清洗、实验脚本和统计结果，避免重复分发大型数据文件。
@@ -38,6 +39,8 @@ python scripts/build_item_cf_index.py
 首次真实数据对比中，混合召回的 HitRate@10 为 4%，单路模型均为 2%；文本向量召回商品覆盖率为 43.38%。由于当前仅评测 50 名用户，这些结果是可复现的阶段性基线，不代表统计显著的线上收益。
 
 M4 将评测扩大到 200 名用户并离线预计算 ItemCF 相似度。ItemCF P95 延迟由 147.98ms 降至 7.25ms，混合召回 P95 由 185.17ms 降至 44.37ms。文本向量召回取得最高 HitRate@10（7.5%），混合召回取得最高 NDCG@10（0.0287）。
+
+M5 使用前 100 名用户选择融合权重、后 200 名用户独立测试。验证集选择文本向量权重 ×2，测试集 HitRate@10 达到 9.5%、NDCG@10 为 0.0385、覆盖率为 63.13%。失败案例中有 160 个候选未召回、21 个候选已召回但排序未进入 Top-10。
 
 ## 快速开始
 
