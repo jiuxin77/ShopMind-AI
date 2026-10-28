@@ -1,9 +1,8 @@
 from fastapi import FastAPI, HTTPException
 
 from shopmind.data import load_demo_data
-from shopmind.recommender import popular_recommend
+from shopmind.retrieval import hybrid_recommend
 from shopmind.schemas import RecommendationItem, RecommendationRequest
-
 
 app = FastAPI(title="ShopMind AI", version="0.1.0")
 
@@ -19,10 +18,18 @@ def recommend(request: RecommendationRequest) -> list[RecommendationItem]:
         _, products, interactions = load_demo_data()
     except FileNotFoundError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
-    result = popular_recommend(
-        products, interactions, request.category, request.budget_max, request.top_k
+    result = hybrid_recommend(
+        products=products,
+        interactions=interactions,
+        user_id=request.user_id,
+        query=request.query,
+        category=request.category,
+        budget_max=request.budget_max,
+        top_k=request.top_k,
     )
-    return [RecommendationItem(**row) for row in result[
-        ["product_id", "title", "category", "price", "score", "reason"]
-    ].to_dict("records")]
-
+    return [
+        RecommendationItem(**row)
+        for row in result[
+            ["product_id", "title", "category", "price", "score", "reason", "evidence"]
+        ].to_dict("records")
+    ]

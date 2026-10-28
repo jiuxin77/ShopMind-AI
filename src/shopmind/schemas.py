@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 
 class RecommendationRequest(BaseModel):
     user_id: str | None = None
+    query: str = ""
     category: str | None = None
     budget_max: float | None = Field(default=None, gt=0)
     scene: str | None = None
@@ -16,4 +17,4 @@ class RecommendationItem(BaseModel):
     price: float
     score: float
     reason: str
-
+    evidence: str

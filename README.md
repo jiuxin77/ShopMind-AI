@@ -11,7 +11,17 @@
 5. **以图搜商品**：使用 CLIP 建立图文共同向量空间，支持相似商品与同风格商品检索。
 6. **评测与 Bad Case**：Precision@K、Recall@K、NDCG@K、HitRate@K、覆盖率、P95 延迟及错误分类。
 
-当前里程碑 `M1` 已实现模拟数据生成、分析指标、推荐基线、FastAPI 接口、Streamlit 看板和单元测试。
+当前里程碑 `M2` 已实现模拟数据生成、分析指标、推荐基线、热门/ItemCF/BM25 多路召回、RRF 融合、Leave-One-Out 离线评测、FastAPI 接口、Streamlit 看板和单元测试。
+
+### M2 召回链路
+
+```text
+热门召回 ─┐
+ItemCF  ──┼─> Reciprocal Rank Fusion ─> 业务规则过滤 ─> Top-K
+BM25    ──┘
+```
+
+评测采用按用户最后一次正向行为留出的 Leave-One-Out 方法，输出 Precision@K、Recall@K、HitRate@K、NDCG@K、商品覆盖率、平均延迟与 P95 延迟。
 
 ## 快速开始
 

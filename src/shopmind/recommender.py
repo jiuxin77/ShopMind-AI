@@ -2,8 +2,14 @@ from __future__ import annotations
 
 import pandas as pd
 
-
-EVENT_WEIGHT = {"view": 1.0, "click": 2.0, "favorite": 3.0, "cart": 4.0, "purchase": 6.0, "refund": -4.0}
+EVENT_WEIGHT = {
+    "view": 1.0,
+    "click": 2.0,
+    "favorite": 3.0,
+    "cart": 4.0,
+    "purchase": 6.0,
+    "refund": -4.0,
+}
 
 
 def popular_recommend(
@@ -14,7 +20,7 @@ def popular_recommend(
     top_k: int = 10,
 ) -> pd.DataFrame:
     """Deterministic popularity baseline with business-rule filtering."""
-    candidates = products.loc[(products["in_stock"] == True) & (products["active"] == True)].copy()  # noqa: E712
+    candidates = products.loc[(products["in_stock"] == True) & (products["active"] == True)].copy()
     if category:
         candidates = candidates[candidates["category"] == category]
     if budget_max is not None:
@@ -27,4 +33,3 @@ def popular_recommend(
     result["score"] = result["event_weight"] + result["rating"] * 0.5
     result["reason"] = "符合库存与预算约束，并基于历史互动热度排序"
     return result.sort_values(["score", "rating"], ascending=False).head(top_k)
-

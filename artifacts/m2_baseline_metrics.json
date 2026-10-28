@@ -1,0 +1,15 @@
+{
+  "dataset": "synthetic-demo-v1",
+  "evaluation": "leave-one-out",
+  "users": 100,
+  "k": 10,
+  "hits": 5,
+  "precision_at_k": 0.005,
+  "recall_at_k": 0.05,
+  "hit_rate_at_k": 0.05,
+  "ndcg_at_k": 0.019871369406794796,
+  "catalog_coverage": 0.24,
+  "mean_latency_ms": 5.956182459776755,
+  "p95_latency_ms": 6.363677039189497,
+  "note": "Synthetic interactions are random and contain weak preference signals; these values are an engineering baseline, not a claimed model improvement."
+}
