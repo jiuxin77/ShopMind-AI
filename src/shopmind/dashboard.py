@@ -106,7 +106,10 @@ with tabs[2]:
         ],
         use_container_width=True,
     )
-    st.caption("当前已实现热门、ItemCF、BM25 与 TF-IDF 文本向量四路召回；图片向量将在后续接入。")
+    st.caption(
+        "当前已实现热门、ItemCF、近期兴趣、同购物篮、BM25 与 TF-IDF 文本向量召回；"
+        "离线实验选择有效通道进入默认组合。"
+    )
 with tabs[3]:
     st.info(
         "M3：接入结构化需求抽取，处理品类、预算、场景、风格和排除条件，并生成事实可追溯的推荐理由。"
@@ -168,5 +171,44 @@ with tabs[5]:
         )
         st.plotly_chart(
             px.pie(distribution, names="type", values="count", title="Bad Case 类型分布"),
+            use_container_width=True,
+        )
+    m6_path = ARTIFACT_DIR / "m6_recall_expansion.json"
+    if m6_path.exists():
+        m6 = json.loads(m6_path.read_text(encoding="utf-8"))
+        m6_results = pd.DataFrame(m6["results"])
+        st.subheader("M6 召回通道消融实验")
+        base = m6_results.loc[m6_results["model"] == "m5_weighted"].iloc[0]
+        best = m6_results.loc[m6_results["model"] == m6["best_model"]].iloc[0]
+        m6_columns = st.columns(4)
+        m6_columns[0].metric(
+            "HitRate@10",
+            f"{best['hit_rate_at_k']:.2%}",
+            f"{best['hit_rate_at_k'] - base['hit_rate_at_k']:+.2%}",
+        )
+        m6_columns[1].metric(
+            "NDCG@10",
+            f"{best['ndcg_at_k']:.4f}",
+            f"{best['ndcg_at_k'] - base['ndcg_at_k']:+.4f}",
+        )
+        m6_columns[2].metric("Candidate Recall@50", f"{best['candidate_recall']:.2%}")
+        m6_columns[3].metric(
+            "P95 延迟",
+            f"{best['p95_latency_ms']:.1f} ms",
+            f"{best['p95_latency_ms'] - base['p95_latency_ms']:+.1f} ms",
+            delta_color="inverse",
+        )
+        st.caption(
+            f"固定独立测试集：{m6['test_slice']}；最优配置：{m6['best_model']}。"
+            "购物篮召回在该切片未带来收益，因此未进入默认组合。"
+        )
+        st.plotly_chart(
+            px.bar(
+                m6_results,
+                x="model",
+                y=["hit_rate_at_k", "candidate_recall"],
+                barmode="group",
+                title="扩展召回通道消融对比",
+            ),
             use_container_width=True,
         )

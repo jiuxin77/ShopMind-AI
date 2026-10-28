@@ -28,6 +28,21 @@ class ItemCFIndex:
         result["rank"] = np.arange(1, len(result) + 1)
         return result
 
+    def recommend_recent(self, history: list[str], top_k: int = 50) -> pd.DataFrame:
+        """Favor the most recent items while retaining neighbor similarity."""
+        scores: dict[str, float] = {}
+        seen = set(history)
+        for position, seed in enumerate(reversed(history)):
+            recency_weight = 1.0 / (1.0 + position)
+            for candidate, similarity in self.neighbors.get(seed, []):
+                if candidate not in seen:
+                    scores[candidate] = scores.get(candidate, 0.0) + similarity * recency_weight
+        ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)[:top_k]
+        result = pd.DataFrame(ranked, columns=["product_id", "raw_score"])
+        result["source"] = "recent_interest"
+        result["rank"] = np.arange(1, len(result) + 1)
+        return result
+
     def save(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump(self, path)

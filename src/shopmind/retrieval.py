@@ -9,6 +9,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from shopmind.basket import BasketIndex, build_basket_index
 from shopmind.item_cf import ItemCFIndex, build_item_cf_index
 from shopmind.recommender import EVENT_WEIGHT
 
@@ -48,6 +49,25 @@ def item_cf_recall(
         return pd.DataFrame(columns=["product_id", "raw_score", "source", "rank"])
 
     return (index or build_item_cf_index(interactions)).recommend(history, top_k=top_k)
+
+
+def recent_interest_recall(
+    user_id: str,
+    interactions: pd.DataFrame,
+    index: ItemCFIndex,
+    recent_items: int = 5,
+    top_k: int = 50,
+) -> pd.DataFrame:
+    history = (
+        interactions.loc[
+            (interactions["user_id"] == user_id) & interactions["event_type"].isin(POSITIVE_EVENTS)
+        ]
+        .sort_values("timestamp")["product_id"]
+        .astype(str)
+        .tail(recent_items)
+        .tolist()
+    )
+    return index.recommend_recent(history, top_k=top_k)
 
 
 def bm25_recall(query: str, products: pd.DataFrame, top_k: int = 50) -> pd.DataFrame:
@@ -144,6 +164,7 @@ def hybrid_recommend(
     sources: set[str] | None = None,
     item_cf_index: ItemCFIndex | None = None,
     source_weights: dict[str, float] | None = None,
+    basket_index: BasketIndex | None = None,
 ) -> pd.DataFrame:
     selected = sources or {"popular", "item_cf", "bm25", "text_vector"}
     recalls: list[pd.DataFrame] = []
@@ -151,6 +172,18 @@ def hybrid_recommend(
         recalls.append(popular_recall(interactions))
     if user_id and "item_cf" in selected:
         recalls.append(item_cf_recall(user_id, interactions, index=item_cf_index))
+    if user_id and "recent_interest" in selected:
+        recent_index = item_cf_index or build_item_cf_index(interactions)
+        recalls.append(recent_interest_recall(user_id, interactions, recent_index))
+    if user_id and "basket" in selected:
+        history = set(
+            interactions.loc[
+                (interactions["user_id"] == user_id)
+                & interactions["event_type"].isin(POSITIVE_EVENTS),
+                "product_id",
+            ].astype(str)
+        )
+        recalls.append((basket_index or build_basket_index(interactions)).recommend(history))
     effective_query = query.strip()
     if not effective_query and user_id:
         history_ids = interactions.loc[

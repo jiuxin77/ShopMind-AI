@@ -60,15 +60,26 @@ def prepare(max_users: int, max_products: int) -> dict[str, int | str]:
     users["city_tier"] = 0
     users["preferred_scene"] = "online_retail"
 
-    interactions = clean[["CustomerID", "StockCode", "InvoiceDate", "Country", "Quantity"]].copy()
+    interactions = clean[
+        ["CustomerID", "StockCode", "InvoiceNo", "InvoiceDate", "Country", "Quantity"]
+    ].copy()
     interactions = interactions.rename(
         columns={"CustomerID": "user_id", "StockCode": "product_id", "InvoiceDate": "timestamp"}
     )
     interactions["interaction_id"] = [f"UCI{i:08d}" for i in range(len(interactions))]
+    interactions["session_id"] = interactions["InvoiceNo"].astype(str)
     interactions["event_type"] = "purchase"
     interactions["scene"] = interactions["Country"].fillna("unknown")
     interactions = interactions[
-        ["interaction_id", "user_id", "product_id", "event_type", "scene", "timestamp"]
+        [
+            "interaction_id",
+            "user_id",
+            "product_id",
+            "event_type",
+            "scene",
+            "session_id",
+            "timestamp",
+        ]
     ]
 
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)

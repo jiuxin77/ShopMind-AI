@@ -6,6 +6,7 @@ import time
 import numpy as np
 import pandas as pd
 
+from shopmind.basket import build_basket_index
 from shopmind.item_cf import build_item_cf_index
 from shopmind.retrieval import POSITIVE_EVENTS, hybrid_recommend
 
@@ -32,11 +33,15 @@ def evaluate_with_details(
     test = test.iloc[user_offset : user_offset + max_users]
     selected = sources or {"popular", "item_cf", "bm25", "text_vector"}
     item_cf_index = build_item_cf_index(train) if "item_cf" in selected else None
+    if "recent_interest" in selected and item_cf_index is None:
+        item_cf_index = build_item_cf_index(train)
+    basket_index = build_basket_index(train) if "basket" in selected else None
     hits = 0
     ndcg_sum = 0.0
     recommended_items: set[str] = set()
     latencies_ms: list[float] = []
     details: list[dict[str, object]] = []
+    candidate_hits = 0
     for row in test.itertuples(index=False):
         started = time.perf_counter()
         result = hybrid_recommend(
@@ -47,6 +52,7 @@ def evaluate_with_details(
             sources=selected,
             item_cf_index=item_cf_index,
             source_weights=source_weights,
+            basket_index=basket_index,
         )
         latency_ms = (time.perf_counter() - started) * 1000
         latencies_ms.append(latency_ms)
@@ -59,6 +65,8 @@ def evaluate_with_details(
             if row.product_id in candidate_ranking
             else None
         )
+        if candidate_rank is not None:
+            candidate_hits += 1
         rank = candidate_rank if hit else None
         if hit:
             hits += 1
@@ -91,6 +99,7 @@ def evaluate_with_details(
         "precision_at_k": hits / (denominator * k),
         "recall_at_k": hits / denominator,
         "hit_rate_at_k": hits / denominator,
+        "candidate_recall": candidate_hits / denominator,
         "ndcg_at_k": ndcg_sum / denominator,
         "catalog_coverage": len(recommended_items) / max(len(products), 1),
         "mean_latency_ms": float(np.mean(latencies_ms)) if latencies_ms else 0.0,

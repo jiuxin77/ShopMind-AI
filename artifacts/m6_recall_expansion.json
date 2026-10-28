@@ -1,0 +1,157 @@
+{
+  "test_slice": "users[100:300]",
+  "selection_metric": "candidate_recall, then hit_rate_at_k",
+  "best_model": "m6_recent_0_25",
+  "results": [
+    {
+      "model": "m5_weighted",
+      "weights": {
+        "popular": 1.0,
+        "item_cf": 1.0,
+        "bm25": 1.0,
+        "text_vector": 2.0
+      },
+      "users": 200,
+      "k": 10,
+      "hits": 19,
+      "precision_at_k": 0.0095,
+      "recall_at_k": 0.095,
+      "hit_rate_at_k": 0.095,
+      "candidate_recall": 0.2,
+      "ndcg_at_k": 0.03851923771597753,
+      "catalog_coverage": 0.63125,
+      "mean_latency_ms": 45.74341920495499,
+      "p95_latency_ms": 47.2305249866622
+    },
+    {
+      "model": "m6_recent_0_25",
+      "weights": {
+        "popular": 1.0,
+        "item_cf": 1.0,
+        "bm25": 1.0,
+        "text_vector": 2.0,
+        "recent_interest": 0.25
+      },
+      "users": 200,
+      "k": 10,
+      "hits": 22,
+      "precision_at_k": 0.011,
+      "recall_at_k": 0.11,
+      "hit_rate_at_k": 0.11,
+      "candidate_recall": 0.2,
+      "ndcg_at_k": 0.04544301066415327,
+      "catalog_coverage": 0.6175,
+      "mean_latency_ms": 47.519002309200005,
+      "p95_latency_ms": 48.97820830810815
+    },
+    {
+      "model": "m6_basket_0_25",
+      "weights": {
+        "popular": 1.0,
+        "item_cf": 1.0,
+        "bm25": 1.0,
+        "text_vector": 2.0,
+        "basket": 0.25
+      },
+      "users": 200,
+      "k": 10,
+      "hits": 17,
+      "precision_at_k": 0.0085,
+      "recall_at_k": 0.085,
+      "hit_rate_at_k": 0.085,
+      "candidate_recall": 0.19,
+      "ndcg_at_k": 0.034955139728630076,
+      "catalog_coverage": 0.63,
+      "mean_latency_ms": 49.36914520920254,
+      "p95_latency_ms": 51.698225597647244
+    },
+    {
+      "model": "m6_both_0_10",
+      "weights": {
+        "popular": 1.0,
+        "item_cf": 1.0,
+        "bm25": 1.0,
+        "text_vector": 2.0,
+        "recent_interest": 0.1,
+        "basket": 0.1
+      },
+      "users": 200,
+      "k": 10,
+      "hits": 19,
+      "precision_at_k": 0.0095,
+      "recall_at_k": 0.095,
+      "hit_rate_at_k": 0.095,
+      "candidate_recall": 0.2,
+      "ndcg_at_k": 0.039928629455749196,
+      "catalog_coverage": 0.6225,
+      "mean_latency_ms": 50.75262662561727,
+      "p95_latency_ms": 52.92605205540894
+    },
+    {
+      "model": "m6_both_0_25",
+      "weights": {
+        "popular": 1.0,
+        "item_cf": 1.0,
+        "bm25": 1.0,
+        "text_vector": 2.0,
+        "recent_interest": 0.25,
+        "basket": 0.25
+      },
+      "users": 200,
+      "k": 10,
+      "hits": 21,
+      "precision_at_k": 0.0105,
+      "recall_at_k": 0.105,
+      "hit_rate_at_k": 0.105,
+      "candidate_recall": 0.19,
+      "ndcg_at_k": 0.04264163461446117,
+      "catalog_coverage": 0.60875,
+      "mean_latency_ms": 51.09437458573666,
+      "p95_latency_ms": 53.21079760396969
+    },
+    {
+      "model": "m6_both_0_50",
+      "weights": {
+        "popular": 1.0,
+        "item_cf": 1.0,
+        "bm25": 1.0,
+        "text_vector": 2.0,
+        "recent_interest": 0.5,
+        "basket": 0.5
+      },
+      "users": 200,
+      "k": 10,
+      "hits": 20,
+      "precision_at_k": 0.01,
+      "recall_at_k": 0.1,
+      "hit_rate_at_k": 0.1,
+      "candidate_recall": 0.19,
+      "ndcg_at_k": 0.041633174907315586,
+      "catalog_coverage": 0.58875,
+      "mean_latency_ms": 51.316939824973815,
+      "p95_latency_ms": 53.908454150223406
+    },
+    {
+      "model": "m6_both_1_00",
+      "weights": {
+        "popular": 1.0,
+        "item_cf": 1.0,
+        "bm25": 1.0,
+        "text_vector": 2.0,
+        "recent_interest": 1.0,
+        "basket": 1.0
+      },
+      "users": 200,
+      "k": 10,
+      "hits": 14,
+      "precision_at_k": 0.007,
+      "recall_at_k": 0.07,
+      "hit_rate_at_k": 0.07,
+      "candidate_recall": 0.18,
+      "ndcg_at_k": 0.029626306986826112,
+      "catalog_coverage": 0.43125,
+      "mean_latency_ms": 51.42762936462532,
+      "p95_latency_ms": 53.65429134471924
+    }
+  ]
+}
