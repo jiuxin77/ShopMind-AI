@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+
+import pandas as pd
 import plotly.express as px
 import streamlit as st
 
@@ -15,6 +19,8 @@ from shopmind.retrieval import hybrid_recommend
 st.set_page_config(page_title="ShopMind AI", layout="wide")
 st.title("ShopMind AI｜多模态商品推荐与 AI 导购")
 st.caption("从人、货、场分析到召回、排序、解释与 Bad Case 的完整推荐闭环")
+
+ARTIFACT_DIR = Path(__file__).resolve().parents[2] / "artifacts"
 
 try:
     users, products, interactions = load_demo_data()
@@ -119,4 +125,23 @@ with tabs[5]:
         metric_columns[2].metric("商品覆盖率", f"{metrics['catalog_coverage']:.2%}")
         metric_columns[3].metric("P95 延迟", f"{metrics['p95_latency_ms']:.1f} ms")
         st.json(metrics)
-    st.info("Bad Case 分类面板将在保存逐用户评测明细后加入。")
+    comparison_path = ARTIFACT_DIR / "m4_model_comparison.json"
+    bad_case_path = ARTIFACT_DIR / "m4_bad_cases.csv"
+    if comparison_path.exists():
+        comparison = pd.DataFrame(json.loads(comparison_path.read_text(encoding="utf-8")))
+        st.plotly_chart(
+            px.bar(
+                comparison,
+                x="model",
+                y=["hit_rate_at_k", "ndcg_at_k", "catalog_coverage"],
+                barmode="group",
+                title="真实数据模型对比",
+            ),
+            use_container_width=True,
+        )
+        st.dataframe(comparison, use_container_width=True)
+    if bad_case_path.exists():
+        details = pd.read_csv(bad_case_path)
+        bad_cases = details[details["hit"] == False]
+        st.metric("未命中 Bad Case", f"{len(bad_cases)} / {len(details)}")
+        st.dataframe(bad_cases.head(100), use_container_width=True)

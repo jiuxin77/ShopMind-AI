@@ -1,0 +1,54 @@
+[
+  {
+    "model": "popular",
+    "users": 200,
+    "k": 10,
+    "hits": 5,
+    "precision_at_k": 0.0025,
+    "recall_at_k": 0.025,
+    "hit_rate_at_k": 0.025,
+    "ndcg_at_k": 0.01822636006712955,
+    "catalog_coverage": 0.0125,
+    "mean_latency_ms": 13.862845410039881,
+    "p95_latency_ms": 14.492110104038145
+  },
+  {
+    "model": "item_cf",
+    "users": 200,
+    "k": 10,
+    "hits": 2,
+    "precision_at_k": 0.001,
+    "recall_at_k": 0.01,
+    "hit_rate_at_k": 0.01,
+    "ndcg_at_k": 0.003243991050595311,
+    "catalog_coverage": 0.10875,
+    "mean_latency_ms": 6.482868694656645,
+    "p95_latency_ms": 7.251066655589965
+  },
+  {
+    "model": "text_vector",
+    "users": 200,
+    "k": 10,
+    "hits": 15,
+    "precision_at_k": 0.0075,
+    "recall_at_k": 0.075,
+    "hit_rate_at_k": 0.075,
+    "ndcg_at_k": 0.0263334319368055,
+    "catalog_coverage": 0.765,
+    "mean_latency_ms": 21.659502715265262,
+    "p95_latency_ms": 22.41883605674957
+  },
+  {
+    "model": "hybrid",
+    "users": 200,
+    "k": 10,
+    "hits": 9,
+    "precision_at_k": 0.0045,
+    "recall_at_k": 0.045,
+    "hit_rate_at_k": 0.045,
+    "ndcg_at_k": 0.028666391877693008,
+    "catalog_coverage": 0.535,
+    "mean_latency_ms": 43.09636476995365,
+    "p95_latency_ms": 44.3688562438183
+  }
+]

@@ -1,5 +1,6 @@
 import pandas as pd
 
+from shopmind.item_cf import build_item_cf_index
 from shopmind.recommender import popular_recommend
 from shopmind.retrieval import (
     bm25_recall,
@@ -112,3 +113,16 @@ def test_hybrid_recommend_respects_business_filters():
     )
     result = hybrid_recommend(products, interactions, query="通勤", budget_max=300)
     assert result["product_id"].tolist() == ["P1"]
+
+
+def test_precomputed_item_cf_recommends_cooccurring_item():
+    interactions = pd.DataFrame(
+        {
+            "user_id": ["U1", "U1", "U2", "U2", "U3"],
+            "product_id": ["P1", "P2", "P1", "P2", "P1"],
+            "event_type": ["purchase"] * 5,
+        }
+    )
+    index = build_item_cf_index(interactions)
+    result = index.recommend({"P1"}, top_k=1)
+    assert result.iloc[0]["product_id"] == "P2"

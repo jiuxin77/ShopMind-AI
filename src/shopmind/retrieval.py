@@ -9,6 +9,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from shopmind.item_cf import ItemCFIndex, build_item_cf_index
 from shopmind.recommender import EVENT_WEIGHT
 
 POSITIVE_EVENTS = {"click", "favorite", "cart", "purchase"}
@@ -32,7 +33,12 @@ def popular_recall(interactions: pd.DataFrame, top_k: int = 50) -> pd.DataFrame:
     return result
 
 
-def item_cf_recall(user_id: str, interactions: pd.DataFrame, top_k: int = 50) -> pd.DataFrame:
+def item_cf_recall(
+    user_id: str,
+    interactions: pd.DataFrame,
+    top_k: int = 50,
+    index: ItemCFIndex | None = None,
+) -> pd.DataFrame:
     positive = interactions[interactions["event_type"].isin(POSITIVE_EVENTS)][
         ["user_id", "product_id"]
     ]
@@ -41,26 +47,7 @@ def item_cf_recall(user_id: str, interactions: pd.DataFrame, top_k: int = 50) ->
     if not history:
         return pd.DataFrame(columns=["product_id", "raw_score", "source", "rank"])
 
-    user_items = positive.groupby("user_id")["product_id"].apply(set)
-    item_users: dict[str, set[str]] = defaultdict(set)
-    for uid, items in user_items.items():
-        for item in items:
-            item_users[item].add(uid)
-
-    scores: Counter[str] = Counter()
-    for seed in history:
-        seed_users = item_users[seed]
-        for candidate, candidate_users in item_users.items():
-            if candidate in history:
-                continue
-            overlap = len(seed_users & candidate_users)
-            if overlap:
-                scores[candidate] += overlap / math.sqrt(len(seed_users) * len(candidate_users))
-
-    result = pd.DataFrame(scores.most_common(top_k), columns=["product_id", "raw_score"])
-    result["source"] = "item_cf"
-    result["rank"] = np.arange(1, len(result) + 1)
-    return result
+    return (index or build_item_cf_index(interactions)).recommend(history, top_k=top_k)
 
 
 def bm25_recall(query: str, products: pd.DataFrame, top_k: int = 50) -> pd.DataFrame:
@@ -151,13 +138,14 @@ def hybrid_recommend(
     budget_max: float | None = None,
     top_k: int = 10,
     sources: set[str] | None = None,
+    item_cf_index: ItemCFIndex | None = None,
 ) -> pd.DataFrame:
     selected = sources or {"popular", "item_cf", "bm25", "text_vector"}
     recalls: list[pd.DataFrame] = []
     if "popular" in selected:
         recalls.append(popular_recall(interactions))
     if user_id and "item_cf" in selected:
-        recalls.append(item_cf_recall(user_id, interactions))
+        recalls.append(item_cf_recall(user_id, interactions, index=item_cf_index))
     effective_query = query.strip()
     if not effective_query and user_id:
         history_ids = interactions.loc[
