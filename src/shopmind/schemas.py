@@ -18,3 +18,14 @@ class RecommendationItem(BaseModel):
     score: float
     reason: str
     evidence: str
+
+
+class ShoppingAssistantRequest(BaseModel):
+    need: str = Field(min_length=1, max_length=500)
+    user_id: str | None = None
+    top_k: int = Field(default=10, ge=1, le=50)
+
+
+class ShoppingAssistantResponse(BaseModel):
+    intent: dict[str, object]
+    recommendations: list[RecommendationItem]

@@ -1,0 +1,86 @@
+{
+  "cases": 6,
+  "slots": 36,
+  "slot_accuracy": 1.0,
+  "constraint_satisfaction_rate": 1.0,
+  "details": [
+    {
+      "query": "想买通勤用的简约女装，预算500元以内，不要星野品牌",
+      "field_results": {
+        "category": true,
+        "budget_min": true,
+        "budget_max": true,
+        "scenes": true,
+        "styles": true,
+        "exclusions": true
+      },
+      "recommendation_count": 6,
+      "constraint_pass": true
+    },
+    {
+      "query": "预算800以内的数码产品，旅行便携，不要北岸",
+      "field_results": {
+        "category": true,
+        "budget_min": true,
+        "budget_max": true,
+        "scenes": true,
+        "styles": true,
+        "exclusions": true
+      },
+      "recommendation_count": 7,
+      "constraint_pass": true
+    },
+    {
+      "query": "至少300元的简约家居，适合居家",
+      "field_results": {
+        "category": true,
+        "budget_min": true,
+        "budget_max": true,
+        "scenes": true,
+        "styles": true,
+        "exclusions": true
+      },
+      "recommendation_count": 10,
+      "constraint_pass": true
+    },
+    {
+      "query": "清爽温和的护肤品，预算600",
+      "field_results": {
+        "category": true,
+        "budget_min": true,
+        "budget_max": true,
+        "scenes": true,
+        "styles": true,
+        "exclusions": true
+      },
+      "recommendation_count": 9,
+      "constraint_pass": true
+    },
+    {
+      "query": "送礼食品，最多400，不考虑云间",
+      "field_results": {
+        "category": true,
+        "budget_min": true,
+        "budget_max": true,
+        "scenes": true,
+        "styles": true,
+        "exclusions": true
+      },
+      "recommendation_count": 10,
+      "constraint_pass": true
+    },
+    {
+      "query": "办公用商务女装，不超过700",
+      "field_results": {
+        "category": true,
+        "budget_min": true,
+        "budget_max": true,
+        "scenes": true,
+        "styles": true,
+        "exclusions": true
+      },
+      "recommendation_count": 10,
+      "constraint_pass": true
+    }
+  ]
+}

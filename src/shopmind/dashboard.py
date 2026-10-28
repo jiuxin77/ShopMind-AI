@@ -15,6 +15,7 @@ from shopmind.data import load_demo_data
 from shopmind.evaluation import evaluate_hybrid
 from shopmind.recommender import popular_recommend
 from shopmind.retrieval import hybrid_recommend
+from shopmind.shopping_assistant import recommend_from_need
 
 st.set_page_config(page_title="ShopMind AI", layout="wide")
 st.title("ShopMind AI｜多模态商品推荐与 AI 导购")
@@ -111,9 +112,46 @@ with tabs[2]:
         "离线实验选择有效通道进入默认组合。"
     )
 with tabs[3]:
-    st.info(
-        "M3：接入结构化需求抽取，处理品类、预算、场景、风格和排除条件，并生成事实可追溯的推荐理由。"
+    st.subheader("自然语言需求理解与可解释推荐")
+    m8_path = ARTIFACT_DIR / "m8_shopping_assistant_eval.json"
+    if m8_path.exists():
+        m8 = json.loads(m8_path.read_text(encoding="utf-8"))
+        eval_columns = st.columns(3)
+        eval_columns[0].metric("回归需求", m8["cases"])
+        eval_columns[1].metric("槽位准确率", f"{m8['slot_accuracy']:.0%}")
+        eval_columns[2].metric("约束满足率", f"{m8['constraint_satisfaction_rate']:.0%}")
+        st.caption("指标来自 6 条、36 个槽位的人工设计回归集，用于功能回归，不代表开放域泛化率。")
+    assistant_need = st.text_area(
+        "描述你的购物需求",
+        "想买一款通勤用的简约女装，预算500元以内，不要星野品牌",
+        height=100,
     )
+    assistant_user = st.selectbox(
+        "关联用户（可选）", ["不使用历史"] + users["user_id"].astype(str).head(100).tolist()
+    )
+    if st.button("生成导购推荐", type="primary"):
+        selected_user: object | None = None
+        if assistant_user != "不使用历史":
+            user_series = users.loc[users["user_id"].astype(str) == assistant_user, "user_id"]
+            selected_user = user_series.iloc[0]
+        intent, assistant_result = recommend_from_need(
+            assistant_need,
+            products,
+            interactions,
+            user_id=selected_user,
+            top_k=10,
+        )
+        left, right = st.columns([1, 2])
+        left.markdown("#### 结构化需求")
+        left.json(intent.to_dict())
+        right.markdown("#### 推荐结果")
+        if assistant_result.empty:
+            right.warning("当前约束下没有匹配商品，请放宽预算或排除条件。")
+        else:
+            right.dataframe(
+                assistant_result[["title", "category", "brand", "price", "rating", "reason"]],
+                use_container_width=True,
+            )
 with tabs[4]:
     st.info("M4：接入 CLIP 图文向量，支持上传图片查找相似商品及图文一致性检查。")
 with tabs[5]:
