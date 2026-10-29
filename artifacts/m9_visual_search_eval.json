@@ -1,0 +1,259 @@
+{
+  "image_source": "deterministic synthetic demo thumbnails",
+  "evaluation": "brightness perturbation retrieval",
+  "cases": 50,
+  "top1_accuracy": 1.0,
+  "top5_accuracy": 1.0,
+  "details": [
+    {
+      "product_id": "P0001",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0002",
+      "rank": 1,
+      "brightness_factor": 0.86
+    },
+    {
+      "product_id": "P0003",
+      "rank": 1,
+      "brightness_factor": 1.14
+    },
+    {
+      "product_id": "P0004",
+      "rank": 1,
+      "brightness_factor": 1.28
+    },
+    {
+      "product_id": "P0005",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0006",
+      "rank": 1,
+      "brightness_factor": 0.86
+    },
+    {
+      "product_id": "P0007",
+      "rank": 1,
+      "brightness_factor": 1.14
+    },
+    {
+      "product_id": "P0008",
+      "rank": 1,
+      "brightness_factor": 1.28
+    },
+    {
+      "product_id": "P0009",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0010",
+      "rank": 1,
+      "brightness_factor": 0.86
+    },
+    {
+      "product_id": "P0011",
+      "rank": 1,
+      "brightness_factor": 1.14
+    },
+    {
+      "product_id": "P0012",
+      "rank": 1,
+      "brightness_factor": 1.28
+    },
+    {
+      "product_id": "P0013",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0014",
+      "rank": 1,
+      "brightness_factor": 0.86
+    },
+    {
+      "product_id": "P0015",
+      "rank": 1,
+      "brightness_factor": 1.14
+    },
+    {
+      "product_id": "P0016",
+      "rank": 1,
+      "brightness_factor": 1.28
+    },
+    {
+      "product_id": "P0017",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0018",
+      "rank": 1,
+      "brightness_factor": 0.86
+    },
+    {
+      "product_id": "P0019",
+      "rank": 1,
+      "brightness_factor": 1.14
+    },
+    {
+      "product_id": "P0020",
+      "rank": 1,
+      "brightness_factor": 1.28
+    },
+    {
+      "product_id": "P0021",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0022",
+      "rank": 1,
+      "brightness_factor": 0.86
+    },
+    {
+      "product_id": "P0023",
+      "rank": 1,
+      "brightness_factor": 1.14
+    },
+    {
+      "product_id": "P0024",
+      "rank": 1,
+      "brightness_factor": 1.28
+    },
+    {
+      "product_id": "P0025",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0026",
+      "rank": 1,
+      "brightness_factor": 0.86
+    },
+    {
+      "product_id": "P0027",
+      "rank": 1,
+      "brightness_factor": 1.14
+    },
+    {
+      "product_id": "P0028",
+      "rank": 1,
+      "brightness_factor": 1.28
+    },
+    {
+      "product_id": "P0029",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0030",
+      "rank": 1,
+      "brightness_factor": 0.86
+    },
+    {
+      "product_id": "P0031",
+      "rank": 1,
+      "brightness_factor": 1.14
+    },
+    {
+      "product_id": "P0032",
+      "rank": 1,
+      "brightness_factor": 1.28
+    },
+    {
+      "product_id": "P0033",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0034",
+      "rank": 1,
+      "brightness_factor": 0.86
+    },
+    {
+      "product_id": "P0035",
+      "rank": 1,
+      "brightness_factor": 1.14
+    },
+    {
+      "product_id": "P0036",
+      "rank": 1,
+      "brightness_factor": 1.28
+    },
+    {
+      "product_id": "P0037",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0038",
+      "rank": 1,
+      "brightness_factor": 0.86
+    },
+    {
+      "product_id": "P0039",
+      "rank": 1,
+      "brightness_factor": 1.14
+    },
+    {
+      "product_id": "P0040",
+      "rank": 1,
+      "brightness_factor": 1.28
+    },
+    {
+      "product_id": "P0041",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0042",
+      "rank": 1,
+      "brightness_factor": 0.86
+    },
+    {
+      "product_id": "P0043",
+      "rank": 1,
+      "brightness_factor": 1.14
+    },
+    {
+      "product_id": "P0044",
+      "rank": 1,
+      "brightness_factor": 1.28
+    },
+    {
+      "product_id": "P0045",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0046",
+      "rank": 1,
+      "brightness_factor": 0.86
+    },
+    {
+      "product_id": "P0047",
+      "rank": 1,
+      "brightness_factor": 1.14
+    },
+    {
+      "product_id": "P0048",
+      "rank": 1,
+      "brightness_factor": 1.28
+    },
+    {
+      "product_id": "P0049",
+      "rank": 1,
+      "brightness_factor": 0.72
+    },
+    {
+      "product_id": "P0050",
+      "rank": 1,
+      "brightness_factor": 0.86
+    }
+  ]
+}

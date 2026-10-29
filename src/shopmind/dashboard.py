@@ -4,6 +4,7 @@ from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from PIL import Image
 
 from shopmind.analytics import (
     behavior_funnel,
@@ -16,12 +17,14 @@ from shopmind.evaluation import evaluate_hybrid
 from shopmind.recommender import popular_recommend
 from shopmind.retrieval import hybrid_recommend
 from shopmind.shopping_assistant import recommend_from_need
+from shopmind.visual_search import build_visual_index, visual_search
 
 st.set_page_config(page_title="ShopMind AI", layout="wide")
 st.title("ShopMind AI｜多模态商品推荐与 AI 导购")
 st.caption("从人、货、场分析到召回、排序、解释与 Bad Case 的完整推荐闭环")
 
 ARTIFACT_DIR = Path(__file__).resolve().parents[2] / "artifacts"
+IMAGE_DIR = Path(__file__).resolve().parents[2] / "data" / "generated_product_images"
 
 try:
     users, products, interactions = load_demo_data()
@@ -153,7 +156,44 @@ with tabs[3]:
                 use_container_width=True,
             )
 with tabs[4]:
-    st.info("M4：接入 CLIP 图文向量，支持上传图片查找相似商品及图文一致性检查。")
+    st.subheader("轻量级以图搜商品")
+    st.warning(
+        "当前使用合成演示缩略图和颜色/空间/边缘特征，用于验证视觉检索工程链路；"
+        "它不是 CLIP，也不代表真实商品照片的语义检索效果。"
+    )
+    m9_path = ARTIFACT_DIR / "m9_visual_search_eval.json"
+    if m9_path.exists():
+        m9 = json.loads(m9_path.read_text(encoding="utf-8"))
+        visual_metrics = st.columns(3)
+        visual_metrics[0].metric("亮度扰动查询", m9["cases"])
+        visual_metrics[1].metric("Top-1", f"{m9['top1_accuracy']:.0%}")
+        visual_metrics[2].metric("Top-5", f"{m9['top5_accuracy']:.0%}")
+        st.caption("评测范围：合成缩略图、0.72–1.28 倍亮度扰动；不等同于真实图片泛化率。")
+    visual_products = products.head(100).copy()
+    visual_index = build_visual_index(visual_products, IMAGE_DIR)
+    source_mode = st.radio("查询图片来源", ["演示商品", "上传图片"], horizontal=True)
+    query_image = None
+    if source_mode == "演示商品":
+        sample_id = st.selectbox("选择演示商品", visual_products["product_id"].astype(str).tolist())
+        sample_position = visual_index.product_ids.index(sample_id)
+        query_image = Image.open(visual_index.image_paths[sample_position])
+        st.image(query_image, caption=f"查询图：{sample_id}（合成演示素材）", width=180)
+    else:
+        uploaded = st.file_uploader("上传 PNG/JPG 图片", type=["png", "jpg", "jpeg"])
+        if uploaded is not None:
+            query_image = Image.open(uploaded)
+            st.image(query_image, caption="上传的查询图片", width=180)
+    if st.button("搜索视觉相似商品", disabled=query_image is None):
+        assert query_image is not None
+        visual_result = visual_search(query_image, visual_products, visual_index, top_k=5)
+        result_columns = st.columns(5)
+        for column, row in zip(result_columns, visual_result.itertuples(index=False), strict=True):
+            column.image(row.image_path, use_container_width=True)
+            column.markdown(f"**{row.title}**")
+            column.caption(f"{row.product_id} · {row.category} · ¥{row.price:.2f}")
+            column.progress(
+                max(0.0, min(1.0, row.visual_score)), text=f"相似度 {row.visual_score:.3f}"
+            )
 with tabs[5]:
     st.subheader("离线评测与性能指标")
     eval_users = st.slider("评测用户数", 10, 100, 30, 10)
