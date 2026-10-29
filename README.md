@@ -8,10 +8,10 @@
 2. **推荐基线**：热门推荐、类目热门推荐，为后续算法提供可比较的 baseline。
 3. **多路召回与排序**：协同过滤、文本向量、图片向量、热门召回、去重过滤与排序。
 4. **AI 导购**：从自然语言提取品类、预算、场景、风格及排除条件，生成有事实依据的推荐理由。
-5. **以图搜商品**：使用 CLIP 建立图文共同向量空间，支持相似商品与同风格商品检索。
+5. **以图搜商品**：使用轻量视觉特征完成演示图相似检索，并为后续真实图片与 CLIP 接入保留评测基线。
 6. **评测与 Bad Case**：Precision@K、Recall@K、NDCG@K、HitRate@K、覆盖率、P95 延迟及错误分类。
 
-当前里程碑 `M9` 已实现模拟及真实电商数据处理、分析指标、多路召回、加权 RRF、逻辑回归重排、离线发布门禁、中文购物需求理解、可追溯推荐理由，以及轻量级视觉相似检索基线、Streamlit 看板和单元测试。
+当前里程碑 `M10` 已完成六个可演示模块、可复现实验、系统架构、简历与面试材料、一键启动和发布前自动检查。
 
 ### M2 召回链路
 
@@ -64,6 +64,12 @@ python scripts/generate_demo_data.py
 streamlit run src/shopmind/dashboard.py
 ```
 
+完成安装后也可以一键启动：
+
+```bash
+python scripts/run_demo.py
+```
+
 API：
 
 ```bash
@@ -74,6 +80,7 @@ uvicorn shopmind.api:app --reload
 
 ```bash
 pytest
+python scripts/release_check.py
 ```
 
 ## 项目结构

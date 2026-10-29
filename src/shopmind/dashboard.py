@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 from PIL import Image
 
@@ -31,6 +32,41 @@ try:
 except FileNotFoundError as exc:
     st.error(str(exc))
     st.stop()
+
+overview = st.columns(5)
+overview[0].metric("里程碑", "M10")
+overview[1].metric("原始交易", "541,909")
+overview[2].metric("独立测试 HitRate@10", "11.0%")
+overview[3].metric("ItemCF P95", "7.25 ms")
+overview[4].metric("自动化测试", "15")
+
+with st.expander("查看系统架构与数据流"):
+    architecture_labels = [
+        "交易与商品数据",
+        "人货场分析",
+        "多路召回",
+        "加权 RRF",
+        "业务约束过滤",
+        "Top-K 推荐",
+        "AI 导购解释",
+        "离线评测",
+        "发布门禁",
+    ]
+    architecture = go.Figure(
+        go.Sankey(
+            node={"label": architecture_labels, "pad": 18, "thickness": 18},
+            link={
+                "source": [0, 0, 2, 3, 4, 5, 5, 7],
+                "target": [1, 2, 3, 4, 5, 6, 7, 8],
+                "value": [2, 8, 8, 8, 8, 4, 4, 4],
+            },
+        )
+    )
+    architecture.update_layout(height=330, margin={"l": 10, "r": 10, "t": 10, "b": 10})
+    st.plotly_chart(architecture, use_container_width=True)
+    st.caption(
+        "候选召回、排序融合、业务过滤、解释和评测相互解耦；未通过门禁的模型不会替换默认方案。"
+    )
 
 tabs = st.tabs(
     [

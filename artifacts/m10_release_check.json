@@ -1,0 +1,31 @@
+{
+  "release": "M10",
+  "passed": true,
+  "checks": [
+    {
+      "name": "ruff",
+      "passed": true,
+      "duration_seconds": 0.023,
+      "summary": "All checks passed!"
+    },
+    {
+      "name": "pytest",
+      "passed": true,
+      "duration_seconds": 0.929,
+      "summary": "15 passed in 0.73s"
+    },
+    {
+      "name": "compile",
+      "passed": true,
+      "duration_seconds": 0.023,
+      "summary": "ok"
+    }
+  ],
+  "required_artifacts": {
+    "m5_weight_tuning.json": true,
+    "m6_recall_expansion.json": true,
+    "m7_ranking_experiment.json": true,
+    "m8_shopping_assistant_eval.json": true,
+    "m9_visual_search_eval.json": true
+  }
+}
