@@ -11,7 +11,7 @@
 5. **以图搜商品**：使用轻量视觉特征完成演示图相似检索，并为后续真实图片与 CLIP 接入保留评测基线。
 6. **评测与 Bad Case**：Precision@K、Recall@K、NDCG@K、HitRate@K、覆盖率、P95 延迟及错误分类。
 
-当前里程碑 `M10` 已完成六个可演示模块、可复现实验、系统架构、简历与面试材料、一键启动和发布前自动检查。
+当前里程碑 `M11` 已完成六个可演示模块、可复现实验、系统架构、简历与面试材料、一键启动、GitHub Actions CI 和 Streamlit Cloud 部署配置。
 
 ### M2 召回链路
 
@@ -81,6 +81,7 @@ uvicorn shopmind.api:app --reload
 ```bash
 pytest
 python scripts/release_check.py
+python scripts/deployment_check.py
 ```
 
 ## 项目结构

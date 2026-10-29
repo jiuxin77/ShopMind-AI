@@ -1,0 +1,25 @@
+{
+  "release": "M11",
+  "python": "3.13.13",
+  "passed": true,
+  "checks": {
+    "required_files": true,
+    "data_loaded": true,
+    "shopping_assistant": true,
+    "visual_search": true
+  },
+  "files": {
+    "requirements.txt": true,
+    "runtime.txt": true,
+    ".streamlit/config.toml": true,
+    "src/shopmind/dashboard.py": true,
+    "data/users.csv": true,
+    "data/products.csv": true,
+    "data/interactions.csv": true
+  },
+  "demo_rows": {
+    "users": 300,
+    "products": 200,
+    "interactions": 5000
+  }
+}

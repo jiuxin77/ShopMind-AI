@@ -5,7 +5,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .DS_Store
-.streamlit/
+.streamlit/secrets.toml
 data/raw/
 data/processed/
 data/generated_product_images/
