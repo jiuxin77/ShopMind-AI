@@ -186,7 +186,8 @@ if selected_page == pages[3]:
     remaining_calls = max(max_session_calls - st.session_state.llm_demo_calls, 0)
     status_columns = st.columns(2)
     status_columns[0].metric("模型", model_name)
-    status_columns[1].metric("本次会话剩余调用", remaining_calls)
+    remaining_calls_metric = status_columns[1].empty()
+    remaining_calls_metric.metric("本次会话剩余调用", remaining_calls)
     assistant_need = st.text_area(
         "描述你的购物需求",
         "想买一款通勤用的简约女装，预算500元以内，不要星野品牌",
@@ -207,6 +208,8 @@ if selected_page == pages[3]:
         disabled=not bool(api_key) or remaining_calls == 0,
     ):
         st.session_state.llm_demo_calls += 1
+        remaining_calls = max(max_session_calls - st.session_state.llm_demo_calls, 0)
+        remaining_calls_metric.metric("本次会话剩余调用", remaining_calls)
         selected_user: object | None = None
         if assistant_user != "不使用历史":
             user_series = users.loc[users["user_id"].astype(str) == assistant_user, "user_id"]
