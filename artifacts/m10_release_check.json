@@ -5,19 +5,19 @@
     {
       "name": "ruff",
       "passed": true,
-      "duration_seconds": 0.02,
+      "duration_seconds": 0.022,
       "summary": "All checks passed!"
     },
     {
       "name": "pytest",
       "passed": true,
-      "duration_seconds": 0.899,
-      "summary": "15 passed in 0.71s"
+      "duration_seconds": 1.114,
+      "summary": "21 passed in 0.86s"
     },
     {
       "name": "compile",
       "passed": true,
-      "duration_seconds": 0.023,
+      "duration_seconds": 0.026,
       "summary": "ok"
     }
   ],

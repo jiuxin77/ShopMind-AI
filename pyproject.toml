@@ -10,10 +10,12 @@ requires-python = ">=3.10"
 dependencies = [
   "fastapi>=0.110",
   "numpy>=1.26",
+  "openai>=1.68",
   "pandas>=2.1",
   "pillow>=10.0",
   "plotly>=5.20",
   "pydantic>=2.6",
+  "pydantic-settings>=2.2",
   "scikit-learn>=1.4",
   "streamlit>=1.32",
   "uvicorn>=0.29",

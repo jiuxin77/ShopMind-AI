@@ -26,6 +26,12 @@ class ShoppingAssistantRequest(BaseModel):
     top_k: int = Field(default=10, ge=1, le=50)
 
 
+class LLMAgentRequest(BaseModel):
+    need: str = Field(min_length=1, max_length=500)
+    user_id: str | None = None
+    model: str | None = None
+
+
 class ShoppingAssistantResponse(BaseModel):
     intent: dict[str, object]
     recommendations: list[RecommendationItem]

@@ -18,7 +18,13 @@ def main() -> None:
         ROOT / "requirements.txt",
         ROOT / "runtime.txt",
         ROOT / ".streamlit" / "config.toml",
+        ROOT / "Dockerfile",
+        ROOT / "docker-compose.yml",
+        ROOT / ".env.example",
         ROOT / "src" / "shopmind" / "dashboard.py",
+        ROOT / "src" / "shopmind" / "api.py",
+        ROOT / "src" / "shopmind" / "llm_shopping_agent.py",
+        ROOT / "data" / "llm_agent_eval_cases.json",
         ROOT / "data" / "users.csv",
         ROOT / "data" / "products.csv",
         ROOT / "data" / "interactions.csv",
@@ -45,7 +51,7 @@ def main() -> None:
         and visual_result.iloc[0]["product_id"] == visual_products.iloc[0]["product_id"],
     }
     output = {
-        "release": "M11",
+        "release": "M12",
         "python": sys.version.split()[0],
         "passed": all(checks.values()),
         "checks": checks,
@@ -56,7 +62,7 @@ def main() -> None:
             "interactions": len(interactions),
         },
     }
-    (ROOT / "artifacts" / "m11_deployment_check.json").write_text(
+    (ROOT / "artifacts" / "m12_deployment_check.json").write_text(
         json.dumps(output, indent=2), encoding="utf-8"
     )
     print(json.dumps(output, indent=2))

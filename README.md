@@ -33,11 +33,11 @@
 1. **用户与业务分析**：行为漏斗、用户分群、价格敏感度、兴趣偏好、复购与流失分析。
 2. **推荐基线**：热门推荐、类目热门推荐，为后续算法提供可比较的 baseline。
 3. **多路召回与排序**：协同过滤、文本向量、图片向量、热门召回、去重过滤与排序。
-4. **AI 导购**：从自然语言提取品类、预算、场景、风格及排除条件，生成有事实依据的推荐理由。
+4. **LLM AI 导购**：Responses API 结构化输出、检索工具调用、必要时追问、商品证据约束与异常降级。
 5. **以图搜商品**：使用轻量视觉特征完成演示图相似检索，并为后续真实图片与 CLIP 接入保留评测基线。
 6. **评测与 Bad Case**：Precision@K、Recall@K、NDCG@K、HitRate@K、覆盖率、P95 延迟及错误分类。
 
-当前里程碑 `M11` 已完成六个可演示模块、可复现实验、系统架构、简历与面试材料、一键启动、GitHub Actions CI 和 Streamlit Cloud 部署配置。
+当前里程碑 `M12` 已完成六个可演示模块、真实 LLM Agent、独立 FastAPI 服务、可复现实验、系统架构、GitHub Actions CI、Docker 与 Streamlit Cloud 部署配置。
 
 ### M2 召回链路
 
@@ -62,6 +62,7 @@ python scripts/run_recall_expansion_experiment.py
 python scripts/run_ranking_experiment.py
 python scripts/evaluate_shopping_assistant.py
 python scripts/evaluate_visual_search.py
+OPENAI_API_KEY=... python scripts/evaluate_llm_agent.py --model gpt-4.1-mini
 ```
 
 原始与处理后数据位于被 Git 忽略的目录中，仓库只保存下载、清洗、实验脚本和统计结果，避免重复分发大型数据文件。
@@ -79,6 +80,10 @@ M7 将候选生成与排序拆分，使用 RRF、各召回源排名、商品热�
 M8 新增离线可复现的中文 AI 导购：抽取品类、价格上下限、场景、风格与排除项，将结构化约束接入推荐链路，并生成包含价格和召回证据的推荐理由。在 6 条人工设计需求、36 个槽位的小规模回归集上，槽位准确率和推荐约束满足率均为 100%；该指标用于功能回归，不作为开放域泛化结论。
 
 M9 新增轻量级视觉检索工程基线：为演示商品生成确定性合成缩略图，提取亮度不变的色度比例、Hue/Saturation 直方图、空间颜色和边缘特征，并使用余弦相似度检索。在 50 张、0.72–1.28 倍亮度扰动的合成图查询中 Top-1 与 Top-5 均为 100%。该结果只验证演示图亮度鲁棒性，不代表真实照片或 CLIP 语义检索能力。
+
+M12 将规则导购升级为真实 LLM Agent。模型必须先选择 `ask_clarification` 或 `search_catalog` 工具；检索结果以商品字段和召回证据回传，最终回答采用 Pydantic 结构化输出，并通过商品 ID 白名单删除无检索依据的推荐。超时、API 或格式错误会自动降级至 M8 本地链路。仓库提供固定 Agent 评测集，统计工具选择准确率、商品依据率、约束满足率、降级率与平均延迟；真实模型指标仅在配置 API Key 后生成，不预填结果。
+
+后端已拆为可独立部署的 FastAPI 服务，包含环境变量配置、JSON 结构化日志、请求 ID、存活/就绪探针、统一异常响应、Docker 健康检查和 GitHub Actions 发布检查。
 
 ## 快速开始
 
@@ -102,6 +107,16 @@ API：
 uvicorn shopmind.api:app --reload
 ```
 
+LLM Agent 可在 Streamlit 页面临时输入 API Key，也可使用环境变量或 Streamlit Secrets。Key 不应提交到 Git：
+
+```bash
+cp .env.example .env
+docker compose up --build
+curl http://localhost:8000/health/ready
+```
+
+服务端接口为 `POST /llm-shopping-agent`，交互文档为 `http://localhost:8000/docs`。
+
 测试：
 
 ```bash
@@ -114,11 +129,11 @@ python scripts/deployment_check.py
 
 ```text
 ShopMind-AI/
-├── data/                  # 演示数据（可替换为公开电商数据集）
+├── data/                  # 演示数据与 LLM Agent 评测集
 ├── docs/                  # 产品、指标和实验设计
 ├── scripts/               # 数据生成与批处理脚本
 ├── src/shopmind/          # 分析、推荐、API 与可视化
-└── tests/                 # 自动化测试
+└── tests/                 # 算法、API、Grounding 与降级测试
 ```
 
 ## 简历指标原则

@@ -20,3 +20,5 @@ jobs:
         run: python scripts/release_check.py
       - name: Run deployment checks
         run: python scripts/deployment_check.py
+      - name: Build API container
+        run: docker build -t shopmind-api:ci .

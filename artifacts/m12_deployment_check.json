@@ -1,0 +1,31 @@
+{
+  "release": "M12",
+  "python": "3.13.13",
+  "passed": true,
+  "checks": {
+    "required_files": true,
+    "data_loaded": true,
+    "shopping_assistant": true,
+    "visual_search": true
+  },
+  "files": {
+    "requirements.txt": true,
+    "runtime.txt": true,
+    ".streamlit/config.toml": true,
+    "Dockerfile": true,
+    "docker-compose.yml": true,
+    ".env.example": true,
+    "src/shopmind/dashboard.py": true,
+    "src/shopmind/api.py": true,
+    "src/shopmind/llm_shopping_agent.py": true,
+    "data/llm_agent_eval_cases.json": true,
+    "data/users.csv": true,
+    "data/products.csv": true,
+    "data/interactions.csv": true
+  },
+  "demo_rows": {
+    "users": 300,
+    "products": 200,
+    "interactions": 5000
+  }
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "search_budget_category",
+    "query": "想买500元以内的简约通勤女装，不要星野品牌",
+    "expected_tool": "search_catalog",
+    "expected_category": "女装",
+    "budget_max": 500,
+    "excluded_terms": ["星野"]
+  },
+  {
+    "id": "search_digital",
+    "query": "推荐一款1000元以内适合学习的数码产品",
+    "expected_tool": "search_catalog",
+    "expected_category": "数码",
+    "budget_max": 1000,
+    "excluded_terms": []
+  },
+  {
+    "id": "search_gift",
+    "query": "找一件300元以下、适合送礼的家居商品",
+    "expected_tool": "search_catalog",
+    "expected_category": "家居",
+    "budget_max": 300,
+    "excluded_terms": []
+  },
+  {
+    "id": "clarify_vague",
+    "query": "帮我挑一个东西",
+    "expected_tool": "ask_clarification"
+  },
+  {
+    "id": "clarify_ambiguous",
+    "query": "我想买个礼物，但还没想好送谁，也没有预算",
+    "expected_tool": "ask_clarification"
+  },
+  {
+    "id": "search_exclusion",
+    "query": "600元内的温和护肤品，排除云朵品牌",
+    "expected_tool": "search_catalog",
+    "expected_category": "护肤",
+    "budget_max": 600,
+    "excluded_terms": ["云朵"]
+  }
+]

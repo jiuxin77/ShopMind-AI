@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -15,9 +16,9 @@ from shopmind.analytics import (
 )
 from shopmind.data import load_demo_data
 from shopmind.evaluation import evaluate_hybrid
+from shopmind.llm_shopping_agent import create_openai_agent
 from shopmind.recommender import popular_recommend
 from shopmind.retrieval import hybrid_recommend
-from shopmind.shopping_assistant import recommend_from_need
 from shopmind.visual_search import build_visual_index, visual_search
 
 st.set_page_config(page_title="ShopMind AI", layout="wide")
@@ -47,11 +48,11 @@ except FileNotFoundError as exc:
     st.stop()
 
 overview = st.columns(5)
-overview[0].metric("里程碑", "M10")
+overview[0].metric("里程碑", "M12")
 overview[1].metric("原始交易", "541,909")
 overview[2].metric("独立测试 HitRate@10", "11.0%")
 overview[3].metric("ItemCF P95", "7.25 ms")
-overview[4].metric("自动化测试", "15")
+overview[4].metric("自动化测试", "21")
 
 with st.expander("查看系统架构与数据流"):
     architecture_labels = [
@@ -164,7 +165,7 @@ if selected_page == pages[2]:
         "离线实验选择有效通道进入默认组合。"
     )
 if selected_page == pages[3]:
-    st.subheader("自然语言需求理解与可解释推荐")
+    st.subheader("LLM Agent：需求理解、工具调用与有据回答")
     m8_path = ARTIFACT_DIR / "m8_shopping_assistant_eval.json"
     if m8_path.exists():
         m8 = json.loads(m8_path.read_text(encoding="utf-8"))
@@ -173,6 +174,19 @@ if selected_page == pages[3]:
         eval_columns[1].metric("槽位准确率", f"{m8['slot_accuracy']:.0%}")
         eval_columns[2].metric("约束满足率", f"{m8['constraint_satisfaction_rate']:.0%}")
         st.caption("指标来自 6 条、36 个槽位的人工设计回归集，用于功能回归，不代表开放域泛化率。")
+    st.caption(
+        "真实调用 OpenAI Responses API。模型必须先选择追问或商品检索工具；"
+        "推荐结果再经过商品 ID 白名单校验，API 异常时自动降级到本地规则。"
+    )
+    secret_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY", ""))
+    session_key = st.text_input(
+        "OpenAI API Key",
+        value="",
+        type="password",
+        help="仅保存在当前浏览器会话；线上部署也可在 Streamlit Secrets 配置。",
+    )
+    api_key = session_key or secret_key
+    model_name = st.selectbox("模型", ["gpt-4.1-mini", "gpt-4.1"])
     assistant_need = st.text_area(
         "描述你的购物需求",
         "想买一款通勤用的简约女装，预算500元以内，不要星野品牌",
@@ -181,29 +195,35 @@ if selected_page == pages[3]:
     assistant_user = st.selectbox(
         "关联用户（可选）", ["不使用历史"] + users["user_id"].astype(str).head(100).tolist()
     )
-    if st.button("生成导购推荐", type="primary"):
+    if not api_key:
+        st.info("输入 API Key 后即可运行真实 LLM Agent；Key 不会写入仓库或日志。")
+    if st.button("运行 LLM 导购", type="primary", disabled=not bool(api_key)):
         selected_user: object | None = None
         if assistant_user != "不使用历史":
             user_series = users.loc[users["user_id"].astype(str) == assistant_user, "user_id"]
             selected_user = user_series.iloc[0]
-        intent, assistant_result = recommend_from_need(
-            assistant_need,
-            products,
-            interactions,
-            user_id=selected_user,
-            top_k=10,
-        )
-        left, right = st.columns([1, 2])
-        left.markdown("#### 结构化需求")
-        left.json(intent.to_dict())
-        right.markdown("#### 推荐结果")
-        if assistant_result.empty:
-            right.warning("当前约束下没有匹配商品，请放宽预算或排除条件。")
+        with st.spinner("模型正在规划工具并生成有据回答…"):
+            agent = create_openai_agent(products, interactions, api_key, model=model_name)
+            agent_result = agent.run(assistant_need, user_id=selected_user)
+        status_columns = st.columns(3)
+        status_columns[0].metric("状态", agent_result.status)
+        status_columns[1].metric("模型", agent_result.model or "-")
+        status_columns[2].metric("推荐数", len(agent_result.recommendations))
+        if agent_result.status == "needs_clarification":
+            st.warning(agent_result.clarification_question)
+        elif agent_result.status == "fallback":
+            st.warning(agent_result.answer)
         else:
-            right.dataframe(
-                assistant_result[["title", "category", "brand", "price", "rating", "reason"]],
+            st.success(agent_result.answer)
+        if agent_result.recommendations:
+            st.dataframe(
+                pd.DataFrame([item.model_dump() for item in agent_result.recommendations]),
                 use_container_width=True,
             )
+        with st.expander("查看结构化工具调用轨迹"):
+            st.json(agent_result.tool_trace)
+            if agent_result.error:
+                st.error(agent_result.error)
 if selected_page == pages[4]:
     st.subheader("轻量级以图搜商品")
     st.warning(
