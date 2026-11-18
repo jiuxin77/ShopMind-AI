@@ -27,8 +27,21 @@ st.caption("从人、货、场分析到召回、排序、解释与 Bad Case 的�
 ARTIFACT_DIR = Path(__file__).resolve().parents[2] / "artifacts"
 IMAGE_DIR = Path(__file__).resolve().parents[2] / "data" / "generated_product_images"
 
+
+@st.cache_data(show_spinner=False)
+def cached_demo_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Load the demo dataset once per deployed app process."""
+    return load_demo_data()
+
+
+@st.cache_resource(show_spinner="首次加载视觉检索索引…")
+def cached_visual_index(products_for_index: pd.DataFrame):
+    """Build synthetic thumbnails and their embeddings only when this module is opened."""
+    return build_visual_index(products_for_index, IMAGE_DIR)
+
+
 try:
-    users, products, interactions = load_demo_data()
+    users, products, interactions = cached_demo_data()
 except FileNotFoundError as exc:
     st.error(str(exc))
     st.stop()
@@ -68,18 +81,18 @@ with st.expander("查看系统架构与数据流"):
         "候选召回、排序融合、业务过滤、解释和评测相互解耦；未通过门禁的模型不会替换默认方案。"
     )
 
-tabs = st.tabs(
-    [
-        "1 用户与业务分析",
-        "2 推荐基线",
-        "3 多路召回",
-        "4 AI 导购",
-        "5 以图搜商品",
-        "6 评测与 Bad Case",
-    ]
-)
+pages = [
+    "1 用户与业务分析",
+    "2 推荐基线",
+    "3 多路召回",
+    "4 AI 导购",
+    "5 以图搜商品",
+    "6 评测与 Bad Case",
+]
+selected_page = st.sidebar.radio("演示模块", pages)
+st.sidebar.caption("每次只加载当前模块，降低云端首屏耗时。")
 
-with tabs[0]:
+if selected_page == pages[0]:
     a, b, c, d = st.columns(4)
     a.metric("用户数", f"{len(users):,}")
     b.metric("商品数", f"{len(products):,}")
@@ -108,7 +121,7 @@ with tabs[0]:
         px.bar(scene, x="scene", y="conversion_rate", title="场景转化率"), use_container_width=True
     )
 
-with tabs[1]:
+if selected_page == pages[1]:
     category_options = ["全部"] + sorted(products["category"].unique().tolist())
     selected = st.selectbox("品类", category_options)
     budget = st.slider("最高预算", 50, 2000, 600, 50)
@@ -120,7 +133,7 @@ with tabs[1]:
         use_container_width=True,
     )
 
-with tabs[2]:
+if selected_page == pages[2]:
     st.subheader("多路召回与 Reciprocal Rank Fusion")
     recall_left, recall_right = st.columns(2)
     user_id = recall_left.selectbox("用户", users["user_id"].head(100).tolist())
@@ -150,7 +163,7 @@ with tabs[2]:
         "当前已实现热门、ItemCF、近期兴趣、同购物篮、BM25 与 TF-IDF 文本向量召回；"
         "离线实验选择有效通道进入默认组合。"
     )
-with tabs[3]:
+if selected_page == pages[3]:
     st.subheader("自然语言需求理解与可解释推荐")
     m8_path = ARTIFACT_DIR / "m8_shopping_assistant_eval.json"
     if m8_path.exists():
@@ -191,7 +204,7 @@ with tabs[3]:
                 assistant_result[["title", "category", "brand", "price", "rating", "reason"]],
                 use_container_width=True,
             )
-with tabs[4]:
+if selected_page == pages[4]:
     st.subheader("轻量级以图搜商品")
     st.warning(
         "当前使用合成演示缩略图和颜色/空间/边缘特征，用于验证视觉检索工程链路；"
@@ -206,7 +219,7 @@ with tabs[4]:
         visual_metrics[2].metric("Top-5", f"{m9['top5_accuracy']:.0%}")
         st.caption("评测范围：合成缩略图、0.72–1.28 倍亮度扰动；不等同于真实图片泛化率。")
     visual_products = products.head(100).copy()
-    visual_index = build_visual_index(visual_products, IMAGE_DIR)
+    visual_index = cached_visual_index(visual_products)
     source_mode = st.radio("查询图片来源", ["演示商品", "上传图片"], horizontal=True)
     query_image = None
     if source_mode == "演示商品":
@@ -230,7 +243,7 @@ with tabs[4]:
             column.progress(
                 max(0.0, min(1.0, row.visual_score)), text=f"相似度 {row.visual_score:.3f}"
             )
-with tabs[5]:
+if selected_page == pages[5]:
     st.subheader("离线评测与性能指标")
     eval_users = st.slider("评测用户数", 10, 100, 30, 10)
     if st.button("运行 Leave-One-Out 评测"):
