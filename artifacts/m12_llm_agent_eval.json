@@ -1,0 +1,65 @@
+{
+  "model": "gpt-4.1-mini",
+  "cases": 6,
+  "tool_selection_accuracy": 1.0,
+  "grounded_product_rate": 1.0,
+  "constraint_satisfaction_rate": 1.0,
+  "fallback_rate": 0.0,
+  "average_latency_ms": 2641.2,
+  "details": [
+    {
+      "id": "search_budget_category",
+      "status": "completed",
+      "tool_correct": true,
+      "grounded": true,
+      "constraint_ok": true,
+      "latency_ms": 3796.1,
+      "error": null
+    },
+    {
+      "id": "search_digital",
+      "status": "completed",
+      "tool_correct": true,
+      "grounded": true,
+      "constraint_ok": true,
+      "latency_ms": 1716.4,
+      "error": null
+    },
+    {
+      "id": "search_gift",
+      "status": "completed",
+      "tool_correct": true,
+      "grounded": true,
+      "constraint_ok": true,
+      "latency_ms": 5878.0,
+      "error": null
+    },
+    {
+      "id": "clarify_vague",
+      "status": "needs_clarification",
+      "tool_correct": true,
+      "grounded": true,
+      "constraint_ok": true,
+      "latency_ms": 1118.6,
+      "error": null
+    },
+    {
+      "id": "clarify_ambiguous",
+      "status": "needs_clarification",
+      "tool_correct": true,
+      "grounded": true,
+      "constraint_ok": true,
+      "latency_ms": 2270.8,
+      "error": null
+    },
+    {
+      "id": "search_exclusion",
+      "status": "completed",
+      "tool_correct": true,
+      "grounded": true,
+      "constraint_ok": true,
+      "latency_ms": 1067.5,
+      "error": null
+    }
+  ]
+}

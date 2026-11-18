@@ -1,57 +1,145 @@
-
 # ShopMind AI
 
-[在线 Demo](https://dashboardpy-atdyds5ymth55g6m623f5z.streamlit.app/) · [个人作品集](https://jiuxin77.github.io/) · [架构说明](docs/system_architecture.md)
+[Live Demo](https://dashboardpy-atdyds5ymth55g6m623f5z.streamlit.app/) · [Portfolio](https://jiuxin77.github.io/) · [System Architecture](docs/system_architecture.md)
 
-**Jiuxin (Harriet) Xiao · 独立个人项目**
+**Jiuxin (Harriet) Xiao · Independent Project**
 
-## 三分钟体验与指标口径
+ShopMind AI is an end-to-end e-commerce recommendation and shopping-agent project. It combines customer analytics, multi-channel retrieval, ranking, grounded LLM recommendations, visual similarity search, offline evaluation, and bad-case analysis in one reproducible demo.
 
-1. 查看用户行为漏斗，再体验多路召回和 AI 导购，检查推荐来源与约束。
-2. 在评测模块比较 M6 和未获门禁通过的 M7，查看失败案例。
-3. 体验图片检索：当前是合成缩略图上的特征基线，不是 CLIP 或真实照片语义检索。
+## Three-Minute Product Tour
 
-| 范围 | 口径 |
+1. Explore the customer funnel, user segments, price sensitivity, category preferences, repeat purchases, and churn signals.
+2. Compare popularity, ItemCF, BM25, TF-IDF, recent-interest, and basket-based retrieval through weighted Reciprocal Rank Fusion.
+3. Ask the LLM shopping agent for a product. The agent either asks a necessary follow-up question or calls catalog search and returns recommendations backed by retrieved product evidence.
+4. Review offline metrics and bad cases, including the M7 reranker that failed the release gate and was not promoted.
+5. Try image-to-product retrieval. This module is a lightweight baseline on deterministic synthetic thumbnails, not a claim of real-photo or CLIP-level semantic retrieval.
+
+## Scope and Metric Definitions
+
+| Area | Definition |
 | --- | --- |
-| 在线演示 | 300 个合成用户、200 个商品、5,000 条演示行为 |
-| 离线实验 | 单独准备的 UCI Online Retail 数据和实验用户切片 |
-| M6 对比 | 同一 200 用户切片；HitRate@10：9.5% → 11.0%（+1.5 个百分点）；NDCG@10：0.0385 → 0.0454 |
-| 候选与延迟 | Candidate Recall@50 均为 20%；P95：47.2 → 49.0 ms，指离线召回测量，不是网页时延 |
-| M7 重排 | HitRate@10 为 10%，低于保留基线的 11%，未通过离线门禁 |
-| 自动化检查 | M10 保存记录为 15 项通过，并非访问页面时现场重跑 |
+| Online demo | 300 synthetic users, 200 products, and 5,000 demo interactions |
+| Offline experiments | A separately prepared UCI Online Retail dataset and fixed experiment user slices |
+| M6 comparison | Same 200-user test slice; HitRate@10: 9.5% to 11.0% (+1.5 percentage points); NDCG@10: 0.0385 to 0.0454 |
+| Candidate recall and latency | Candidate Recall@50 remained 20%; P95 changed from 47.2 ms to 49.0 ms; latency is offline retrieval time, not webpage latency |
+| M7 reranker | HitRate@10 was 10%, below the retained 11% baseline, so the offline release gate rejected it |
+| LLM agent evaluation | Six fixed real-API cases: 100% tool-selection accuracy, 100% grounded-product rate, 100% constraint satisfaction, 0% fallback rate, and 2.64 s average latency |
+| Automated checks | The current local regression suite contains 21 passing tests |
 
-后续实验反复比较了同一测试用户切片，结果属于探索性离线对比，不是完全未参与选型的最终盲测，也不是线上业务提升。下一轮应冻结方案并使用新的时间切分留出集。当前导购由规则与检索驱动，大模型 Agent 和生产级监控属于后续方向。
+The later retrieval experiments repeatedly compare variants on the same held-out user slice. They are exploratory offline comparisons, not untouched final blind-test results or measured online business lift. A production iteration should freeze the selected approach and evaluate it on a new time-based holdout.
 
-独立构建端到端电商推荐系统，包含用户与业务分析、推荐基线、多路召回与融合排序、自然语言导购、以图搜商品、离线评测与 Bad Case 分析六个演示模块。
+## Six Demonstrable Modules
 
-实现热门、ItemCF、BM25、TF-IDF、近期兴趣和购物篮等召回策略，通过加权 RRF 融合候选，并使用 HitRate@10、NDCG@10、覆盖率和 P95 延迟评估效果；建立自动化测试与离线模型发布门禁。
+1. **Customer and business analytics** — conversion funnel, customer segmentation, price sensitivity, category affinity, repeat purchase, and churn analysis.
+2. **Recommendation baselines** — global popularity and category popularity as transparent comparison points.
+3. **Multi-channel retrieval and ranking** — ItemCF, BM25, TF-IDF, recent-interest, basket co-occurrence, filtering, deduplication, and weighted RRF.
+4. **Grounded LLM shopping agent** — OpenAI Responses API, structured outputs, tool calling, selective clarification, product-evidence constraints, and safe fallback.
+5. **Visual product search** — lightweight visual features for demo-image similarity search, with an evaluation baseline for future real-image and CLIP integration.
+6. **Evaluation and bad-case analysis** — Precision@K, Recall@K, NDCG@K, HitRate@K, coverage, P95 latency, error categories, and release gates.
 
-在线 Demo 使用 300 名合成用户、200 个商品和 5,000 条演示交互；已保存的检查记录显示 15 项测试通过。导购目前基于规则与检索，图像检索为合成缩略图上的轻量特征基线。
+Milestone `M12` includes all six modules, a real LLM agent, an independently deployable FastAPI service, reproducible experiments, system documentation, GitHub Actions CI, Docker support, and Streamlit Cloud configuration.
 
-## 六个可演示模块
-
-1. **用户与业务分析**：行为漏斗、用户分群、价格敏感度、兴趣偏好、复购与流失分析。
-2. **推荐基线**：热门推荐、类目热门推荐，为后续算法提供可比较的 baseline。
-3. **多路召回与排序**：协同过滤、文本向量、图片向量、热门召回、去重过滤与排序。
-4. **LLM AI 导购**：Responses API 结构化输出、检索工具调用、必要时追问、商品证据约束与异常降级。
-5. **以图搜商品**：使用轻量视觉特征完成演示图相似检索，并为后续真实图片与 CLIP 接入保留评测基线。
-6. **评测与 Bad Case**：Precision@K、Recall@K、NDCG@K、HitRate@K、覆盖率、P95 延迟及错误分类。
-
-当前里程碑 `M12` 已完成六个可演示模块、真实 LLM Agent、独立 FastAPI 服务、可复现实验、系统架构、GitHub Actions CI、Docker 与 Streamlit Cloud 部署配置。
-
-### M2 召回链路
+## System Flow
 
 ```text
-热门召回 ─┐
-ItemCF  ──┼─> Reciprocal Rank Fusion ─> 业务规则过滤 ─> Top-K
-BM25    ──┘
+User need
+   |
+   v
+LLM decision ---- underspecified ----> Clarification question
+   |
+   | searchable request
+   v
+Catalog tool -> Multi-channel retrieval -> Constraint filtering -> Top-K evidence
+   |                                                        |
+   +---------------- Structured grounded answer <-----------+
+                            |
+                    Provider failure
+                            v
+                 Local rule-based fallback
 ```
 
-评测采用按用户最后一次正向行为留出的 Leave-One-Out 方法，输出 Precision@K、Recall@K、HitRate@K、NDCG@K、商品覆盖率、平均延迟与 P95 延迟。
+### Retrieval Pipeline
 
-## 真实数据实验
+```text
+Popularity ---------+
+ItemCF -------------+--> Weighted Reciprocal Rank Fusion --> Business filters --> Top-K
+BM25 / TF-IDF ------+
+Recent interest ----+
+Basket co-occurrence+
+```
 
-M3 使用 UCI Machine Learning Repository 的 Online Retail 数据集。该数据包含 2010—2011 年英国线上零售商的 541,909 条交易记录，许可为 CC BY 4.0。
+Evaluation uses a leave-one-out protocol based on each user's last positive interaction. Reports include Precision@K, Recall@K, HitRate@K, NDCG@K, catalog coverage, mean latency, and P95 latency.
+
+## Experiment History
+
+### M3: Real-Data Baseline
+
+M3 uses the UCI Machine Learning Repository's Online Retail dataset: 541,909 transactions from a UK online retailer collected in 2010–2011 under CC BY 4.0. In the first 50-user experiment, hybrid retrieval achieved 4% HitRate@10 versus 2% for each single-channel baseline. TF-IDF retrieval reached 43.38% item coverage. These are reproducible intermediate baselines, not statistically significant production gains.
+
+### M4: ItemCF Precomputation
+
+The evaluation expanded to 200 users and precomputed ItemCF similarities. ItemCF P95 latency dropped from 147.98 ms to 7.25 ms, while hybrid P95 dropped from 185.17 ms to 44.37 ms. TF-IDF achieved the highest HitRate@10 at 7.5%, while hybrid retrieval achieved the highest NDCG@10 at 0.0287.
+
+### M5: Weight Selection and Independent Test Slice
+
+The first 100 users were used for fusion-weight selection and the following 200 users for testing. Doubling the TF-IDF channel weight produced 9.5% HitRate@10, 0.0385 NDCG@10, and 63.13% coverage. Bad-case analysis found 160 candidate-recall failures and 21 ranking failures where the target was retrieved but missed the top ten.
+
+### M6: Recall Expansion
+
+Recent-interest and basket co-occurrence channels were added on the same 200-user test slice. With a recent-interest weight of 0.25, Candidate Recall@50 remained 20%, HitRate@10 improved from 9.5% to 11.0%, NDCG@10 improved from 0.0385 to 0.0454, and P95 latency increased from 47.2 ms to 49.0 ms. Basket co-occurrence did not improve this slice and was excluded from the default blend.
+
+### M7: Reranking Release Gate
+
+A logistic-regression reranker used 12 features, including RRF score, source ranks, item popularity, price deviation, and user-history length. Its 10% HitRate@10 was below M6's 11%, so the release gate rejected it. The experiment exposed a sparse candidate-training set with only 20 positive examples and motivates improved negative sampling, more users, and tree-based ranking models.
+
+### M8: Constraint-Aware Shopping Assistant
+
+The local assistant extracts category, price range, scenario, style, and exclusions, applies those constraints to retrieval, and generates reasons that include price and retrieval evidence. On a six-request, 36-slot regression set, slot accuracy and recommendation constraint satisfaction were both 100%. This is a functional regression metric, not an open-domain generalization claim.
+
+### M9: Visual Retrieval Baseline
+
+The visual module generates deterministic synthetic thumbnails and extracts brightness-invariant chromatic ratios, hue and saturation histograms, spatial color, and edge features. Cosine-similarity retrieval achieved 100% Top-1 and Top-5 accuracy on 50 synthetic queries with brightness scaled from 0.72x to 1.28x. The result measures robustness on generated demo images only.
+
+### M12: Grounded LLM Agent and Deployable API
+
+The agent must first call either `ask_clarification` or `search_catalog`. Retrieved product fields and evidence are returned to the model, and the final response is validated with a Pydantic structured-output schema. A product-ID allowlist removes unsupported recommendations. Timeouts, provider errors, and malformed outputs fall back to the M8 local pipeline.
+
+The FastAPI service includes environment-based configuration, structured JSON logs, request IDs, liveness and readiness probes, consistent error responses, a Docker health check, and GitHub Actions release checks.
+
+## Quick Start
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e '.[dev]'
+python scripts/generate_demo_data.py
+streamlit run src/shopmind/dashboard.py
+```
+
+One-command demo startup:
+
+```bash
+python scripts/run_demo.py
+```
+
+Start the API:
+
+```bash
+uvicorn shopmind.api:app --reload
+```
+
+Configure the LLM agent through an environment variable or Streamlit Secrets. Never commit an API key:
+
+```bash
+cp .env.example .env
+# Add OPENAI_API_KEY to .env
+docker compose up --build
+curl http://localhost:8000/health/ready
+```
+
+The agent endpoint is `POST /llm-shopping-agent`. Interactive API documentation is available at `http://localhost:8000/docs`.
+
+## Reproduce Experiments
 
 ```bash
 python scripts/prepare_uci_online_retail.py --max-users 500 --max-products 1000
@@ -65,59 +153,9 @@ python scripts/evaluate_visual_search.py
 OPENAI_API_KEY=... python scripts/evaluate_llm_agent.py --model gpt-4.1-mini
 ```
 
-原始与处理后数据位于被 Git 忽略的目录中，仓库只保存下载、清洗、实验脚本和统计结果，避免重复分发大型数据文件。
+Raw and processed UCI files are stored in Git-ignored directories. The repository includes only download, cleaning, experiment, and result-generation code to avoid redistributing large data files.
 
-首次真实数据对比中，混合召回的 HitRate@10 为 4%，单路模型均为 2%；文本向量召回商品覆盖率为 43.38%。由于当前仅评测 50 名用户，这些结果是可复现的阶段性基线，不代表统计显著的线上收益。
-
-M4 将评测扩大到 200 名用户并离线预计算 ItemCF 相似度。ItemCF P95 延迟由 147.98ms 降至 7.25ms，混合召回 P95 由 185.17ms 降至 44.37ms。文本向量召回取得最高 HitRate@10（7.5%），混合召回取得最高 NDCG@10（0.0287）。
-
-M5 使用前 100 名用户选择融合权重、后 200 名用户独立测试。验证集选择文本向量权重 ×2，测试集 HitRate@10 达到 9.5%、NDCG@10 为 0.0385、覆盖率为 63.13%。失败案例中有 160 个候选未召回、21 个候选已召回但排序未进入 Top-10。
-
-M6 在同一组后 200 名独立测试用户上增加近期兴趣与同购物篮召回并做权重消融。近期兴趣权重 0.25 时，Candidate Recall@50 保持 20%，HitRate@10 从 9.5% 提升至 11.0%，NDCG@10 从 0.0385 提升至 0.0454，P95 延迟从 47.2ms 增至 49.0ms。同购物篮通道在当前切片未带来收益，实验保留但不进入默认组合。
-
-M7 将候选生成与排序拆分，使用 RRF、各召回源排名、商品热度、价格偏差和用户历史长度等 12 个特征训练逻辑回归重排器。独立测试集上重排 HitRate@10 为 10%，低于 M6 的 11%，因此离线发布门禁拒绝上线并继续使用 M6。实验暴露出候选训练集仅 20 个正样本的数据稀疏问题，为后续负采样、更多用户数据和树模型迭代提供依据。
-
-M8 新增离线可复现的中文 AI 导购：抽取品类、价格上下限、场景、风格与排除项，将结构化约束接入推荐链路，并生成包含价格和召回证据的推荐理由。在 6 条人工设计需求、36 个槽位的小规模回归集上，槽位准确率和推荐约束满足率均为 100%；该指标用于功能回归，不作为开放域泛化结论。
-
-M9 新增轻量级视觉检索工程基线：为演示商品生成确定性合成缩略图，提取亮度不变的色度比例、Hue/Saturation 直方图、空间颜色和边缘特征，并使用余弦相似度检索。在 50 张、0.72–1.28 倍亮度扰动的合成图查询中 Top-1 与 Top-5 均为 100%。该结果只验证演示图亮度鲁棒性，不代表真实照片或 CLIP 语义检索能力。
-
-M12 将规则导购升级为真实 LLM Agent。模型必须先选择 `ask_clarification` 或 `search_catalog` 工具；检索结果以商品字段和召回证据回传，最终回答采用 Pydantic 结构化输出，并通过商品 ID 白名单删除无检索依据的推荐。超时、API 或格式错误会自动降级至 M8 本地链路。仓库提供固定 Agent 评测集，统计工具选择准确率、商品依据率、约束满足率、降级率与平均延迟；真实模型指标仅在配置 API Key 后生成，不预填结果。
-
-后端已拆为可独立部署的 FastAPI 服务，包含环境变量配置、JSON 结构化日志、请求 ID、存活/就绪探针、统一异常响应、Docker 健康检查和 GitHub Actions 发布检查。
-
-## 快速开始
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e '.[dev]'
-python scripts/generate_demo_data.py
-streamlit run src/shopmind/dashboard.py
-```
-
-完成安装后也可以一键启动：
-
-```bash
-python scripts/run_demo.py
-```
-
-API：
-
-```bash
-uvicorn shopmind.api:app --reload
-```
-
-LLM Agent 可在 Streamlit 页面临时输入 API Key，也可使用环境变量或 Streamlit Secrets。Key 不应提交到 Git：
-
-```bash
-cp .env.example .env
-docker compose up --build
-curl http://localhost:8000/health/ready
-```
-
-服务端接口为 `POST /llm-shopping-agent`，交互文档为 `http://localhost:8000/docs`。
-
-测试：
+## Testing and Release Checks
 
 ```bash
 pytest
@@ -125,20 +163,17 @@ python scripts/release_check.py
 python scripts/deployment_check.py
 ```
 
-## 项目结构
+## Project Structure
 
 ```text
 ShopMind-AI/
-├── data/                  # 演示数据与 LLM Agent 评测集
-├── docs/                  # 产品、指标和实验设计
-├── scripts/               # 数据生成与批处理脚本
-├── src/shopmind/          # 分析、推荐、API 与可视化
-└── tests/                 # 算法、API、Grounding 与降级测试
+├── data/                  # Demo data and the fixed LLM-agent evaluation set
+├── docs/                  # Product, metric, experiment, and architecture documentation
+├── scripts/               # Data preparation, evaluation, and batch scripts
+├── src/shopmind/          # Analytics, retrieval, agent, API, and dashboard code
+└── tests/                 # Algorithm, API, grounding, fallback, and release tests
 ```
 
-## 简历指标原则
+## Metric Integrity
 
-README 中只记录脚本真实产出的结果。禁止预先填写“提升 30%”等未经实验验证的数据。
-
-
-
+This README reports only results produced by committed scripts and saved artifacts. It does not claim unmeasured online lift or pre-fill unsupported improvement percentages. LLM metrics depend on the fixed evaluation set, model version, prompt, and API conditions recorded at evaluation time.

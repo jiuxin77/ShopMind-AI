@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from shopmind import api
 from shopmind.api import app
 
 client = TestClient(app)
@@ -20,7 +21,11 @@ def test_readiness_checks_demo_data():
     assert payload["data"] == {"users": 300, "products": 200, "interactions": 5000}
 
 
-def test_llm_endpoint_requires_server_side_key():
+def test_llm_endpoint_requires_server_side_key(monkeypatch):
+    settings_without_key = api.settings.model_copy(update={"openai_api_key": None})
+    monkeypatch.setattr(api, "settings", settings_without_key)
+
     response = client.post("/llm-shopping-agent", json={"need": "500元以内的通勤女装"})
+
     assert response.status_code == 503
     assert response.json()["detail"] == "OPENAI_API_KEY is not configured"
