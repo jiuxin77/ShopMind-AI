@@ -178,15 +178,15 @@ if selected_page == pages[3]:
         "真实调用 OpenAI Responses API。模型必须先选择追问或商品检索工具；"
         "推荐结果再经过商品 ID 白名单校验，API 异常时自动降级到本地规则。"
     )
-    secret_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY", ""))
-    session_key = st.text_input(
-        "OpenAI API Key",
-        value="",
-        type="password",
-        help="仅保存在当前浏览器会话；线上部署也可在 Streamlit Secrets 配置。",
-    )
-    api_key = session_key or secret_key
-    model_name = st.selectbox("模型", ["gpt-4.1-mini", "gpt-4.1"])
+    api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY", ""))
+    model_name = st.secrets.get("OPENAI_MODEL", os.getenv("OPENAI_MODEL", "gpt-4.1-mini"))
+    max_session_calls = 3
+    if "llm_demo_calls" not in st.session_state:
+        st.session_state.llm_demo_calls = 0
+    remaining_calls = max(max_session_calls - st.session_state.llm_demo_calls, 0)
+    status_columns = st.columns(2)
+    status_columns[0].metric("模型", model_name)
+    status_columns[1].metric("本次会话剩余调用", remaining_calls)
     assistant_need = st.text_area(
         "描述你的购物需求",
         "想买一款通勤用的简约女装，预算500元以内，不要星野品牌",
@@ -195,9 +195,18 @@ if selected_page == pages[3]:
     assistant_user = st.selectbox(
         "关联用户（可选）", ["不使用历史"] + users["user_id"].astype(str).head(100).tolist()
     )
-    if not api_key:
-        st.info("输入 API Key 后即可运行真实 LLM Agent；Key 不会写入仓库或日志。")
-    if st.button("运行 LLM 导购", type="primary", disabled=not bool(api_key)):
+    if api_key:
+        st.success("LLM 服务已由服务器安全配置，无需输入 API Key。")
+    else:
+        st.info("LLM 服务尚未配置。部署者需要在 Streamlit Secrets 中设置 OPENAI_API_KEY。")
+    if remaining_calls == 0:
+        st.warning("本次浏览器会话的 LLM 演示次数已用完，请刷新会话后再试。")
+    if st.button(
+        "运行 LLM 导购",
+        type="primary",
+        disabled=not bool(api_key) or remaining_calls == 0,
+    ):
+        st.session_state.llm_demo_calls += 1
         selected_user: object | None = None
         if assistant_user != "不使用历史":
             user_series = users.loc[users["user_id"].astype(str) == assistant_user, "user_id"]

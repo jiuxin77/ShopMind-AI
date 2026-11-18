@@ -139,6 +139,15 @@ curl http://localhost:8000/health/ready
 
 The agent endpoint is `POST /llm-shopping-agent`. Interactive API documentation is available at `http://localhost:8000/docs`.
 
+For Streamlit Cloud, open the app settings, select **Secrets**, and add:
+
+```toml
+OPENAI_API_KEY = "your-server-side-key"
+OPENAI_MODEL = "gpt-4.1-mini"
+```
+
+The public dashboard never asks visitors for an API key and never returns the configured key to the browser. To control portfolio-demo cost, the UI uses the configured mini model and permits three LLM calls per browser session.
+
 ## Reproduce Experiments
 
 ```bash
