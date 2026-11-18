@@ -31,5 +31,5 @@ def popular_recommend(
     scores = events.groupby("product_id", as_index=False)["event_weight"].sum()
     result = candidates.merge(scores, on="product_id", how="left").fillna({"event_weight": 0.0})
     result["score"] = result["event_weight"] + result["rating"] * 0.5
-    result["reason"] = "符合库存与预算约束，并基于历史互动热度排序"
+    result["reason"] = "Meets inventory and budget constraints; ranked by historical engagement"
     return result.sort_values(["score", "rating"], ascending=False).head(top_k)

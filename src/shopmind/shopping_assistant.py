@@ -10,6 +10,9 @@ from shopmind.retrieval import hybrid_recommend
 CATEGORIES = ("女装", "数码", "家居", "护肤", "食品")
 SCENES = ("通勤", "办公", "旅行", "居家", "送礼", "健身", "学习")
 STYLES = ("简约", "休闲", "商务", "复古", "清爽", "温和", "低糖", "便携")
+CATEGORY_EN = {"女装": "Women's Fashion", "数码": "Electronics", "家居": "Home", "护肤": "Skincare", "食品": "Food"}
+SCENE_EN = {"通勤": "commute", "办公": "office", "旅行": "travel", "居家": "home", "送礼": "gifting", "健身": "fitness", "学习": "study"}
+STYLE_EN = {"简约": "minimalist", "休闲": "casual", "商务": "business", "复古": "vintage", "清爽": "refreshing", "温和": "gentle", "低糖": "low-sugar", "便携": "portable"}
 
 
 @dataclass(frozen=True)
@@ -108,14 +111,19 @@ def recommend_from_need(
         return intent, candidates
 
     def explain(row: pd.Series) -> str:
-        facts = [f"{row['category']}商品", f"价格 ¥{row['price']:.2f}"]
+        facts = [
+            f"Category: {CATEGORY_EN.get(row['category'], row['category'])}",
+            f"Price: ¥{row['price']:.2f}",
+        ]
         if intent.budget_max is not None:
-            facts.append(f"未超过 ¥{intent.budget_max:.0f} 预算")
+            facts.append(f"Within the ¥{intent.budget_max:.0f} budget")
         if intent.scenes:
-            facts.append(f"匹配{'/'.join(intent.scenes)}场景")
+            facts.append(f"Matches the {'/'.join(SCENE_EN.get(value, value) for value in intent.scenes)} context")
         if intent.styles:
-            facts.append(f"包含{'/'.join(intent.styles)}偏好")
-        facts.append(f"召回证据：{row['evidence']}")
+            facts.append(
+                f"Matches {'/'.join(STYLE_EN.get(value, value) for value in intent.styles)} preferences"
+            )
+        facts.append(f"Retrieval evidence: {row['evidence']}")
         return "；".join(facts)
 
     candidates["reason"] = candidates.apply(explain, axis=1)

@@ -50,4 +50,4 @@ def test_recommendation_applies_budget_and_exclusion():
         interactions,
     )
     assert result["product_id"].tolist() == ["P1"]
-    assert "未超过 ¥500 预算" in result.iloc[0]["reason"]
+    assert "Within the ¥500 budget" in result.iloc[0]["reason"]

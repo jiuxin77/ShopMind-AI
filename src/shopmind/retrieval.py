@@ -210,5 +210,7 @@ def hybrid_recommend(
         candidates = candidates[candidates["category"] == category]
     if budget_max is not None:
         candidates = candidates[candidates["price"] <= budget_max]
-    candidates["reason"] = candidates["evidence"].map(lambda value: f"由多路召回命中：{value}")
+    candidates["reason"] = candidates["evidence"].map(
+        lambda value: f"Retrieved through multiple channels: {value}"
+    )
     return candidates.sort_values("score", ascending=False).head(top_k).reset_index(drop=True)
